@@ -1,23 +1,19 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import SmartDrain from './components/SmartDrain';
+import DrainwaterTable from './components/DrainwaterTable';
 
 function App() {
+  const [sensorData, setSensorData] = useState([]);  // Hold sensor data
+
+  // Function to receive data from DrainwaterTable
+  const handleFilterData = (data) => {
+    setSensorData(data);  // Directly update sensor data
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <DrainwaterTable onFilterData={handleFilterData} />
+      <SmartDrain sensorData={sensorData} />
     </div>
   );
 }
