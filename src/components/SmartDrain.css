@@ -157,6 +157,11 @@ html, body {
     border: 1px solid black;
     position: relative;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    transition: all 0.3s ease; /* Smooth transitions */
+}
+
+.sensor-card:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Slight increase in shadow on hover */
 }
 
 /* Measurements */
@@ -224,14 +229,12 @@ html, body {
     padding: 20px;
     width: 80%;
     max-width: 1000px;
-    margin: 0 auto;
+    margin: 0 auto; /* Centers the graph on the page */
     background-color: #f7f9fc; /* Light background */
     border-radius: 15px; /* Rounded corners */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
     border: 1px solid #e0e0e0; /* Light border */
 }
-
-
 
 .graph-container h2 {
     font-family: 'Poppins', sans-serif; /* Change to a modern font */
@@ -256,3 +259,140 @@ html, body {
     border-top: 1px solid #cccfd4; /* Subtle border */
     background-color: #f8f9fa; /* Light background color */
 }
+
+.date-selection {
+    display: flex;
+    justify-content: space-between; /* Distributes the inputs evenly */
+    align-items: center;
+    flex-wrap: wrap; /* Ensures inputs wrap on smaller screens */
+    margin-bottom: 20px;
+}
+
+.date-selection label {
+    font-family: 'Roboto', sans-serif; /* Change to a modern font */
+    color: #666; /* Softer font color */
+    margin-right: 5px; /* Margin between label and input */
+}
+
+.date-selecetion input[type="date"],
+.date-selection input[type="time"] {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    margin-right: 10px;
+    width: 150px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    transition: all 0.3s ease; /* Smooth transition */
+}
+
+.date-selection input[type="date"]:hover,
+.date-selection input[type="time"]:hover {
+    border-color: #007bff; /* Border turns blue on hover */
+}
+
+.date-selection input[type="date"]::placeholder,
+.date-selection input[type="time"]::placeholder {
+    color: #999; /* Lighter placeholder color */
+}
+
+.date-selection input[type="date"]:focus,
+.date-selection input[type="time"]:focus {
+    border-color: #007bff; /* Blue border color on focus */
+    outline: none; /* Remove default focus styling */
+}
+
+@media (max-width: 768px) {
+    .date-selection {
+        flex-direction: column; /* Stack inputs vertically on smaller screens */
+        align-items: flex-start;
+    }
+
+    .date-selection input[type="date"],
+    .date-selection input[type="time"] {
+        margin-bottom: 10px; /* Add spacing between stacked inputs */
+        width: 100%; /* Make the inputs take full width */
+    }
+}
+
+.clear-button {
+    background: none;
+    border: none;
+    color: #007bff;
+    top: -50%;
+    cursor: pointer;
+}
+
+.clear-button:hover {
+    color: #0056b3; /* Darker blue on hover */
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 50vh; /* Full-page center */
+  }
+  
+  .cool-spinner {
+    border: 6px solid rgba(0, 0, 0, 0.1); /* Lighter outer ring */
+    border-top: 6px solid #4db8ff; /* Solid color for the spinning part */
+    border-radius: 50%;
+    width: 60px; /* Larger spinner */
+    height: 60px;
+    animation: spin 1.5s linear infinite; /* Slightly slower spin */
+    box-shadow: 0px 4px 10px rgba(0, 123, 255, 0.3); /* Subtle glow effect */
+    background: linear-gradient(45deg, #0004ff, #00d4ff); /* Gradient for cool effect */
+  }
+  
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .loading-text {
+    margin-top: 15px; /* Spacing between spinner and text */
+    font-size: 1.2rem; /* Larger text */
+    color: #007bff; /* Matches the spinner color */
+    animation: fade 1.5s ease-in-out infinite; /* Fade in/out effect */
+  }
+  
+  @keyframes fade {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5; /* Half transparency at the middle of the animation */
+    }
+  }
+  
+  /* Keyframe animation for changing the color */
+@keyframes colorChange {
+    0% {
+      color: #000000; /* Blue */
+    }
+    25% {
+      color: #093c74; /* Green */
+    }
+    50% {
+      color: #007bff; /* Yellow */
+    }
+    75% {
+      color: #2573c6; /* Orange */
+    }
+    100% {
+      color: #0b2a50; /* Blue (back to start) */
+    }
+  }
+  
+  .loading-text {
+    font-weight: bold;
+    animation: colorChange 2s linear infinite; /* 2 seconds for full cycle */
+  }
+  

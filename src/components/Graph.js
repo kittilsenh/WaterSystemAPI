@@ -13,6 +13,15 @@ const Graph = ({ sensorData }) => {
   const [endTime, setEndTime] = useState('23:59');  // Default end time
   const [filteredData, setFilteredData] = useState([]);
 
+  const [loading, setLoading] = useState(true);  // New state for loading
+
+
+  useEffect(() => {
+    if (sensorData.length > 0) {
+      setLoading(false);  // Turn off loading once data is available
+    }
+  }, [sensorData]);
+
   // Combine the date and time to create a full Date object
   const combineDateTime = (date, time) => new Date(`${date}T${time}`);
 
@@ -81,6 +90,8 @@ const Graph = ({ sensorData }) => {
           value={startTime} 
           onChange={(e) => setStartTime(e.target.value)} 
         />
+          <button className="clear-button" onClick={() => { setStartDate(''); setStartTime(''); }}>Clear</button>
+
         
         <label>End Date:</label>
         <input 
@@ -93,10 +104,19 @@ const Graph = ({ sensorData }) => {
           value={endTime} 
           onChange={(e) => setEndTime(e.target.value)} 
         />
+          <button className="clear-button" onClick={() => { setEndDate(''); setEndTime(''); }}>Clear</button>
+
       </div>
 
-      {/* Render the Line Chart */}
-      <Line data={chartData} options={options} />
+      {loading ? (
+        <div className="loading-container">
+  <div className="cool-spinner"></div>
+  <p className="loading-text">Loading...</p> {/* Text with cool fade effect */}
+</div>
+      ) : (
+        <Line data={chartData} options={options} />
+      )}
+
     </div>
   );
 };

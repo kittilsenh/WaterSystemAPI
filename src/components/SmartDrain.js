@@ -385,14 +385,46 @@ const SmartDrain = () => {
                 <div className="sensor-header">
                   <h5 className="sensor-title">SENSOR 01</h5>
                 </div>
+
                 <div className="sensor-info">
                   <div className="sensor-labels">
-                    <p><strong>SPEED:</strong> {sensor1Data ? calculateVelocity(sensor1Data.distance) + ' m/s' : 'Loading...'}</p>
-                    <p><strong>WATER DEPTH:</strong> {sensor1Data ? sensor1Data.distance + ' m' : 'Loading...'}</p>
-                    <p><strong>FLOW RATE:</strong> {sensor1Data ? calculateFlowRate(calculateVelocity(sensor1Data.distance), sensor1Data.distance) + ' m³/s' : 'Not available'}</p>
+                    <p>
+                      <strong>SPEED:</strong>{' '}
+                      {sensor1Data ? (
+                        calculateVelocity(sensor1Data.distance) + ' m/s'
+                      ) : (
+                        <span className="loading-text">Loading...</span>
+                      )}
+                    </p>
+                    <p>
+                      <strong>WATER DEPTH:</strong>{' '}
+                      {sensor1Data ? (
+                        sensor1Data.distance + ' m'
+                      ) : (
+                        <span className="loading-text">Loading...</span>
+                      )}
+                    </p>
+                    <p>
+                      <strong>FLOW RATE:</strong>{' '}
+                      {sensor1Data ? (
+                        calculateFlowRate(
+                          calculateVelocity(sensor1Data.distance),
+                          sensor1Data.distance
+                        ) + ' m³/s'
+                      ) : (
+                        <span className="loading-text">Loading...</span>
+                      )}
+                    </p>
                   </div>
                 </div>
-                <p className="battery-label">BATTERY LEVEL: {sensor1Data ? sensor1Data.voltage : 'Loading...'}</p>
+
+                  <p className="battery-label">
+                    BATTERY LEVEL: {sensor1Data ? (
+                      sensor1Data.voltage
+                    ) : (
+                      <span className="loading-text">Loading...</span>
+                    )}
+                  </p>
                 {sensor1Data && (
                   <>
                     <div className="sensor-values">
