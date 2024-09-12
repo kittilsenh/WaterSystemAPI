@@ -194,8 +194,8 @@ html, body {
 
 .battery-label {
     position: absolute;
-    bottom: -30px;
-    left: -20px;
+    bottom: -10px;
+    left: 10px;
     font-weight: bold;
 }
 
