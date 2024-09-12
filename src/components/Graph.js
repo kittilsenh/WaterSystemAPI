@@ -3,6 +3,10 @@ import { Line } from 'react-chartjs-2'; // Use Line instead of Bar
 import { Chart as ChartJS, TimeScale, LinearScale, LineElement, Title, Tooltip, Legend, PointElement } from 'chart.js';
 import 'chartjs-adapter-date-fns'; // For date handling in chart.js
 
+import zoomPlugin from 'chartjs-plugin-zoom';
+ChartJS.register(zoomPlugin);
+
+
 // Register the necessary elements for a line chart
 ChartJS.register(TimeScale, LinearScale, LineElement, Title, Tooltip, Legend, PointElement);
 
@@ -56,11 +60,32 @@ const Graph = ({ sensorData }) => {
       x: {
         type: 'time',  // x-axis uses time
         time: {
-          unit: 'day',  // Group by day
+          unit: 'hour',  // Group by day
+          stepSize: 1,  // Display every hour
+          displayFormats: {
+            hour: 'h:mm a',
+            '12AM': 'MM d',  // Display hour:minute AM/PM for hourly labels
+            '12PM': 'MM d',  // Display month and day for daily labels
+          },
+          tooltipFormat: 'MMM d, h:mm a', // Format for tooltip (optional)
         },
         title: {
           display: true,
-          text: 'Days',  // Label for the x-axis
+          text: 'Date and Time',  // Label for the x-axis
+        },
+        ticks: {
+          autoSkip: true,  // Automatically skip ticks to avoid overcrowding
+          maxTicksLimit: 24,  // Limit the number of ticks (adjust as needed)
+          callback: function (value, index, values) {
+            // Display the date at 12AM and 12PM
+            const date = new Date(value);
+            const hours = date.getHours();
+            if (hours === 0 || hours === 12) {
+              return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            }
+            // Otherwise, show only the time
+            return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+          },
         },
       },
       y: {
@@ -71,7 +96,25 @@ const Graph = ({ sensorData }) => {
         },
       },
     },
+    plugins: {
+      zoom: {
+        pan: {
+          enabled: true,
+          mode: 'xy',
+        },
+        zoom: {
+          wheel: {
+            enabled: true,
+          },
+          pinch: {
+            enabled: true,
+          },
+          mode: 'xy',
+        },
+      },
+    },
   };
+  
 
   return (
     <div className="graph-container">

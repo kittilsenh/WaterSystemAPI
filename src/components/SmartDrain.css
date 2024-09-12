@@ -393,6 +393,36 @@ html, body {
   
   .loading-text {
     font-weight: bold;
-    animation: colorChange 2s linear infinite; /* 2 seconds for full cycle */
+    animation: colorChange 3s linear infinite; /* 2 seconds for full cycle */
   }
+
+  
+  .skeleton {
+    background-color: #e0e0e0;
+    height: 20px;
+    border-radius: 4px;
+    animation: pulse 1.5s infinite ease-in-out;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  
+  .skeleton.text,
+  .sensor-value {
+    width: 100px; /* Fixed width for both skeleton and text */
+    text-align: right; /* Align text to the right within the fixed width */
+    display: inline-block;
+  }
+  
+  @keyframes pulse {
+    0% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  
   

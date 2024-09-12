@@ -176,12 +176,12 @@ const SmartDrain = () => {
                   >
                     d
                   </div>
-                                    {/* Vertical measurement with arrows -- 450 -- */}
-                                    <div
+                  {/* Vertical measurement with arrows -- 450 -- */}
+                  <div
                     style={{
                       position: 'absolute',
                       left: '-50px', // Move left to position the arrow and measurement
-                      top: '50%',
+                      top: '65%',
                       transform: 'translateY(-50%)',
                       fontSize: '14px',
                       display: 'flex',
@@ -393,15 +393,15 @@ const SmartDrain = () => {
                       {sensor1Data ? (
                         calculateVelocity(sensor1Data.distance) + ' m/s'
                       ) : (
-                        <span className="loading-text">Loading...</span>
-                      )}
+                        <div className="skeleton text"></div> /* Skeleton Loader */
+                        )}
                     </p>
                     <p>
                       <strong>WATER DEPTH:</strong>{' '}
                       {sensor1Data ? (
                         sensor1Data.distance + ' m'
                       ) : (
-                        <span className="loading-text">Loading...</span>
+                        <div className="skeleton text"></div> /* Skeleton Loader */
                       )}
                     </p>
                     <p>
@@ -412,7 +412,7 @@ const SmartDrain = () => {
                           sensor1Data.distance
                         ) + ' m³/s'
                       ) : (
-                        <span className="loading-text">Loading...</span>
+                        <div className="skeleton text"></div> /* Skeleton Loader */
                       )}
                     </p>
                   </div>
@@ -422,17 +422,28 @@ const SmartDrain = () => {
                     BATTERY LEVEL: {sensor1Data ? (
                       sensor1Data.voltage
                     ) : (
-                      <span className="loading-text">Loading...</span>
+                      <div className="skeleton text"></div> /* Skeleton Loader */
                     )}
                   </p>
-                {sensor1Data && (
-                  <>
-                    <div className="sensor-values">
-                      <p><strong>DATE:</strong> {formatTimestamp(sensor1Data.timestamp).date}</p>
-                      <p><strong>TIME:</strong> {formatTimestamp(sensor1Data.timestamp).time}</p>
-                    </div>
-                  </>
-                )}
+      {/* Date and Time inside sensor-values div */}
+      <div className="sensor-values">
+        <p>
+          <strong>DATE:</strong>{' '}
+          {sensor1Data ? (
+            formatTimestamp(sensor1Data.timestamp).date
+          ) : (
+            <div className="skeleton text"></div> /* Skeleton Loader for Date */
+          )}
+        </p>
+        <p>
+          <strong>TIME:</strong>{' '}
+          {sensor1Data ? (
+            formatTimestamp(sensor1Data.timestamp).time
+          ) : (
+            <div className="skeleton text"></div> /* Skeleton Loader for Time */
+          )}
+        </p>
+      </div>
               </Card.Body>
             </Card>
 
