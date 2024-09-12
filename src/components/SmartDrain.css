@@ -245,3 +245,14 @@ html, body {
     font-family: 'Roboto', sans-serif; /* Change to a modern font */
     color: #666; /* Softer font color */
 }
+
+.last-updated {
+    font-size: 1rem; /* Smaller font size */
+    font-weight: 300; /* Light font weight */
+    color: #878080; /* Subtle gray color */
+    text-align: center; /* Center-align the text */
+    padding: 10px 0; /* Padding for spacing */
+    margin-top: 30px; /* Margin to separate from content */
+    border-top: 1px solid #cccfd4; /* Subtle border */
+    background-color: #f8f9fa; /* Light background color */
+}
