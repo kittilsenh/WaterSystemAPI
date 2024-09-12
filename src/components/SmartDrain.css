@@ -7,6 +7,7 @@ html, body {
 .smart-drain-system {
     min-height: 100vh; /* Make sure the container takes the full height */
     padding-bottom: 20px; /* Add padding at the bottom so content doesn't stick to the edge */
+    background-color: #f4f4f9; /* Light background color */
 }
 
 .Headline {
@@ -21,7 +22,7 @@ html, body {
 .parent-card {
     padding: 50px;
     margin-bottom: 20px;
-    border: 2px solid black;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
 }
 
 /* Water Tank Styling */
@@ -155,6 +156,12 @@ html, body {
     margin-bottom: 20px;
     border: 1px solid black;
     position: relative;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+/* Measurements */
+.measurement {
+    color: #333; /* Darker text color */
 }
 
 .sensor-header {
