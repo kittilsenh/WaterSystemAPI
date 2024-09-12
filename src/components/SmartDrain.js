@@ -176,6 +176,186 @@ const SmartDrain = () => {
                   >
                     d
                   </div>
+                                    {/* Vertical measurement with arrows -- 450 -- */}
+                                    <div
+                    style={{
+                      position: 'absolute',
+                      left: '-50px', // Move left to position the arrow and measurement
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      fontSize: '14px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      color: 'black',
+                    }}
+                  >
+                    {/* Custom upward arrow */}
+                    <div
+                      style={{
+                        width: '2px',
+                        height: '40px', // Length of the arrow line (can be increased or decreased)
+                        backgroundColor: 'black',
+                        position: 'relative',
+                      }}
+                    >
+                      <div
+                        style={{
+                          content: '',
+                          position: 'absolute',
+                          top: '-10px', // Position of the arrowhead
+                          left: '-5px',
+                          borderLeft: '5px solid transparent',
+                          borderRight: '5px solid transparent',
+                          borderBottom: '10px solid black',
+                        }}
+                      ></div>
+                    </div>
+
+                    <span>450</span>
+
+                    {/* Custom downward arrow */}
+                    <div
+                      style={{
+                        width: '2px',
+                        height: '40px', // Length of the arrow line (can be increased or decreased)
+                        backgroundColor: 'black',
+                        position: 'relative',
+                      }}
+                    >
+                      <div
+                        style={{
+                          content: '',
+                          position: 'absolute',
+                          bottom: '-10px', // Position of the arrowhead
+                          left: '-5px',
+                          borderLeft: '5px solid transparent',
+                          borderRight: '5px solid transparent',
+                          borderTop: '10px solid black',
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  {/* Horizontal measurement at the bottom -- 750 --*/}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: '-55px',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      fontSize: '14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      color: 'black',
+                    }}
+                  >
+                    {/* Left arrow */}
+                    <div
+                      style={{
+                        width: '90px', // Length of the arrow line
+                        height: '2px',
+                        backgroundColor: 'black',
+                        position: 'relative',
+                      }}
+                    >
+                      <div
+                        style={{
+                          content: '',
+                          position: 'absolute',
+                          left: '-10px',
+                          top: '-5px',
+                          borderTop: '5px solid transparent',
+                          borderBottom: '5px solid transparent',
+                          borderRight: '10px solid black',
+                        }}
+                      ></div>
+                    </div>
+
+                    <span style={{ margin: '0 5px' }}>750</span>
+
+                    {/* Right arrow */}
+                    <div
+                      style={{
+                        width: '90px', // Length of the arrow line
+                        height: '2px',
+                        backgroundColor: 'black',
+                        position: 'relative',
+                      }}
+                    >
+                        <div
+                          style={{
+                            content: '',
+                            position: 'absolute',
+                            right: '-10px',
+                            top: '-5px',
+                            borderTop: '5px solid transparent',
+                            borderBottom: '5px solid transparent',
+                            borderLeft: '10px solid black',
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Bottom internal width measurement -- 600 --*/}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        bottom: '-22.5px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        fontSize: '14px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        color: 'black',
+                      }}
+                    >
+                        {/* Left arrow */}
+                        <div
+                          style={{
+                            width: '60px', // Length of the arrow line
+                            height: '2px',
+                            backgroundColor: 'black',
+                            position: 'relative',
+                          }}
+                        >
+                          <div
+                            style={{
+                              content: '',
+                              position: 'absolute',
+                              left: '-10px',
+                              top: '-5px',
+                              borderTop: '5px solid transparent',
+                              borderBottom: '5px solid transparent',
+                              borderRight: '10px solid black',
+                            }}
+                          ></div>
+                        </div>
+
+                        <span style={{ margin: '0 5px' }}>600</span>
+
+                        {/* Right arrow */}
+                        <div
+                          style={{
+                            width: '60px', // Length of the arrow line
+                            height: '2px',
+                            backgroundColor: 'black',
+                            position: 'relative',
+                          }}
+                        >
+                          <div
+                            style={{
+                              content: '',
+                              position: 'absolute',
+                              right: '-10px',
+                              top: '-5px',
+                              borderTop: '5px solid transparent',
+                              borderBottom: '5px solid transparent',
+                              borderLeft: '10px solid black',
+                            }}
+                          ></div>
+                        </div>
+                      </div>
                 </div>
 
                 {/* Floating divs for visual effect */}
