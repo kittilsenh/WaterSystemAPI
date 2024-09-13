@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Card } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import Wavify from 'react-wavify';
 import Graph from './Graph';  // Import the Graph component
 import DrainwaterTable from './DrainwaterTable';  // Import real-time data handler
 import './SmartDrain.css';
+
+import { FaBars } from 'react-icons/fa';  // Import the FaBars icon
 
 const SmartDrain = () => {
   const [waterLevel, setWaterLevel] = useState(60);  // Default water level
@@ -13,6 +15,23 @@ const SmartDrain = () => {
   const [depth, setDepth] = useState(54.56); // Set an initial value for depth
 
   const [lastUpdated, setLastUpdated] = useState(null);  // Store the last update time
+
+  const [isMenuOpen, setIsMenuOpen] = useState(false);  // State to toggle the menu
+
+
+    // Function to handle opening and closing the menu
+    const toggleMenu = () => {
+      setIsMenuOpen(!isMenuOpen);
+    };
+  
+
+    // Logout handler function
+    const handleLogout = () => {
+      // Clear authentication data (localStorage or other session data)
+      localStorage.removeItem('authToken');  // Replace with your session/token key
+      // Redirect to the login page
+      window.location.href = '/login';  // Replace '/login' with the correct login route
+    };
 
   // Fetch initial data from the API
   useEffect(() => {
@@ -131,18 +150,37 @@ const SmartDrain = () => {
 
   return (
     // JSX code 
-    <Container fluid className="smart-drain-system">
-      <Row>
-        <Col>
-          <h1 className="Headline">SMART DRAIN WATER SYSTEM</h1>
-        </Col>
-      </Row>
+<Container fluid className="smart-drain-system">
+  <Row className="d-flex justify-content-center align-items-center">
+    <Col md={10} className="text-center">
+      <h1 className="headline">SMART DRAIN WATER SYSTEM</h1>
+    </Col>
+    <Col md={2} className="d-flex justify-content-end">
+      {/* Hamburger Icon */}
+      <FaBars className="hamburger-icon" onClick={toggleMenu} />
+    </Col>
+  </Row>
+
+  {/* Menu Sidebar */}
+  <div className={`menu-sidebar ${isMenuOpen ? 'open' : ''}`}>
+    <Button onClick={handleLogout} className="menu-button">Logout</Button>
+    <Button className="close-sidebar" onClick={toggleMenu}>Close Sidebar</Button> {/* Close button */}
+  </div>
+
+    {/* Overlay to close the sidebar when clicking outside */}
+    {isMenuOpen && <div className="menu-overlay" onClick={toggleMenu}></div>}
+
+    
 
       <Card className="parent-card">
         <Row>
           <Col md={{ span: 5, offset: 1 }} className="d-flex justify-content-center">
             <Card.Body className="tank-container">
+              {/* Add Logout Button here */}
               <div className="water-tank-container">
+
+
+
                 <div className="water-tank">
                   {/* Water level visualization */}
                   <Wavify

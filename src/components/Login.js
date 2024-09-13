@@ -3,24 +3,33 @@ import { FaUser, FaLock } from 'react-icons/fa';
 import Wavify from 'react-wavify'; // Import Wavify for waves
 import './Login.css';
 
-const WaterTank = () => (
-  <div className="login-water-tank-container">
-    <div className="login-water-tank">
-      {/* Adding waves */}
-      <Wavify
-        fill="#00aaff"  // Wave color
-        paused={false}
-        options={{
-          height: 20,
-          amplitude: 15,
-          speed: 0.2,
-          points: 3,
-        }}
-        className="login-waves" // Ensure waves are scoped to the login page
-      />
+const WaterTank = () => {
+  const [waveSpeed, setWaveSpeed] = useState(0.2); // Initial wave speed
+
+  return (
+    <div
+      className="login-water-tank-container"
+      onMouseEnter={() => setWaveSpeed(0.4)}  // Set speed to 0.5 on hover
+      onMouseLeave={() => setWaveSpeed(0.2)}  // Reset speed to 0.2 when hover ends
+    >
+      <div className="login-water-tank">
+        <Wavify
+          fill="url(#waveGradient)"
+          paused={false}
+          options={{ height: 20, amplitude: 15, speed: waveSpeed, points: 3 }}
+          className="login-waves"
+        >
+          <defs>
+            <linearGradient id="waveGradient" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#00aaff" />
+              <stop offset="100%" stopColor="#004080" />
+            </linearGradient>
+          </defs>
+        </Wavify>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const Login = ({ onLogin }) => {
   const [username, setUsername] = useState('');
@@ -40,7 +49,6 @@ const Login = ({ onLogin }) => {
     };
 
     try {
-      // Send the POST request to the API endpoint
       const response = await fetch('http://64.227.152.179:8080/drainwater-0.1/drainwater/login', {
         method: 'POST',
         headers: {
@@ -51,19 +59,15 @@ const Login = ({ onLogin }) => {
 
       const result = await response.json();
 
-      // Handle the response from the API
       if (response.ok && result.status === 'Login successful') {
-        // Perform login action (you can redirect the user or do something else)
         onLogin();
       } else {
-        // Display an error message if login fails
         setError('Invalid credentials. Please try again.');
       }
     } catch (error) {
       console.error('Login error:', error);
       setError('An error occurred during login. Please try again later.');
     }
-
     setIsSubmitting(false);
   };
 
@@ -112,6 +116,7 @@ const Login = ({ onLogin }) => {
               <span className="login-spinner"></span> // Add spinner here if necessary
             ) : 'Login'}
           </button>
+          
           <div className="login-forgot-password">
             <a href="#">Forgot Password?</a>
           </div>

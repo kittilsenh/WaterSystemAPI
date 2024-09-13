@@ -91,10 +91,11 @@
     border-radius: 6px;
     cursor: pointer;
     font-size: 1.1rem;
-    transition: all 0.3s ease; /* Add transition effect */
-  }
+    transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out; /* Smooth transition */
+}
 
   .login-button:hover {
+    transform: scale(1.025); /* Slightly enlarge button */
     background-color: #0059b3; /* Darker blue on hover */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
   }
@@ -167,15 +168,20 @@
   .login-water-tank-container {
     animation: fadeInUp 1.2s ease-in-out;
   }
-  
-  @keyframes fadeInUp {
-    0% {
-      opacity: 0;
-      transform: translateY(30px);
+    
+  .login-input-container input, .login-button, .login-water-tank {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
+
+    .login-input-container input {
+        width: 100%;
+        padding: 12px 50px; /* Add more padding for comfort */
+        border: 2px solid #ccc;
+        border-radius: 8px;
+        transition: border 0.3s, box-shadow 0.3s;
     }
-  }
-  
+    
+    .login-input-container input:focus {
+        border-color: #004080;
+        box-shadow: 0 0 8px rgba(0, 64, 128, 0.5); /* Add focus effect */
+    } 

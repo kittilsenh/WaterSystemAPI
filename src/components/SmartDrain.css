@@ -7,15 +7,16 @@ html, body {
 .smart-drain-system {
     min-height: 100vh; /* Make sure the container takes the full height */
     padding-bottom: 20px; /* Add padding at the bottom so content doesn't stick to the edge */
-    background-color: #f4f4f9; /* Light background color */
+    background-color: #004080;
 }
 
-.Headline {
+.headline {
     font-size: 4em;
     font-weight: bold;
     margin-bottom: 20px;
     margin-top: 20px;
     text-align: center;
+    color: #fff !important;
 }
 
 /* Parent Card */
@@ -423,3 +424,86 @@ html, body {
       opacity: 1;
     }
   }  
+
+  .water-tank-container {
+    position: relative;  /* Make the container the positioning context */
+  }
+  
+ 
+  .hamburger-icon {
+    font-size: 28px;
+    cursor: pointer;
+    color: #ffffff;
+    margin-right: 20px;
+ 
+  }
+  
+  .menu-sidebar {
+    position: fixed;
+    top: 0;
+    right: -250px;  /* Hidden by default */
+    width: 250px;
+    height: 100vh;
+    background-color: #f8f9fa;
+    padding: 20px;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+    transition: right 0.3s ease-in-out;
+    z-index: 1000;
+  }
+  
+  .menu-sidebar.open {
+    right: 0;  /* Slide in the menu */
+  }
+
+  /* Close Button in Sidebar */
+.close-sidebar {
+    display: block;
+    width: 100%;
+    background-color: #2321a3 !important;
+    color: white;
+    padding: 10px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: left;
+}
+
+.close-sidebar:hover {
+    background-color: #d43f3f;
+}
+
+/* Overlay that closes the sidebar when clicked */
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);  /* Semi-transparent black */
+    z-index: 999;  /* Make sure it's below the sidebar */
+}
+  
+  .menu-button {
+    display: block;
+    width: 100%;
+    background-color: #ff4d4d !important;
+    border-color: red !important;
+    color: white;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: left;
+  }
+  
+  .menu-button:hover {
+    background-color: #d43f3f;
+  }
+  
+  .menu-button:focus {
+    outline: none;
+  }
+  
