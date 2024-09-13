@@ -27,7 +27,7 @@ const WaterTank = () => {
           fill={waterColor}
           paused={false}
           options={{
-            height: 2.5,
+            height: 2,
             amplitude: 12.5,
             speed: 0.20,
             points: 3,

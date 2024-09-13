@@ -113,7 +113,7 @@
   }
   
   .login-water-tank {
-    width: 200px;
+    width: 250px;
     height: 180px;
     border-left: 20px solid gray;
     border-right: 20px solid gray;
@@ -128,7 +128,7 @@
   .login-waves {
     position: absolute;
     bottom: 0;
+    height: 100px;
     width: 100%;
     z-index: 1;
   }
-  
