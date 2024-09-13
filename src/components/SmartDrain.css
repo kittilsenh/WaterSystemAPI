@@ -2,9 +2,13 @@
 html, body {
     height: 100%;
     overflow-y: auto; /* Ensure vertical scrolling */
+    display: flex;
+    flex-direction: column;
 }
 
 .smart-drain-system {
+    flex: 1;  /* Take up all the remaining space */
+
     min-height: 100vh; /* Make sure the container takes the full height */
     padding-bottom: 20px; /* Add padding at the bottom so content doesn't stick to the edge */
     background-color: #004080;
@@ -447,7 +451,7 @@ html, body {
     background-color: #f8f9fa;
     padding: 20px;
     box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
-    transition: right 0.3s ease-in-out;
+    transition: right 0.5s ease-in-out;
     z-index: 1000;
   }
   
@@ -507,3 +511,26 @@ html, body {
     outline: none;
   }
   
+  .menu-overlay.open {
+    opacity: 1;  /* Fade in the overlay */
+}
+
+/* Footer Styling */
+.footer {
+    background-color: #004080;
+    color: #fff;
+    text-align: center;
+    padding: 20px 0;
+    margin-top: auto;  /* Pushes the footer to the bottom when content is less */
+    width: 100%;
+}
+
+.footer a {
+    color: #ffcc00;
+    text-decoration: none;
+    margin: 0 10px;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}

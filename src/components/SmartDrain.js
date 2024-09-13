@@ -14,9 +14,13 @@ const SmartDrain = () => {
   const [sensorData, setSensorData] = useState([]);  // Hold all sensor data
   const [depth, setDepth] = useState(54.56); // Set an initial value for depth
 
+
   const [lastUpdated, setLastUpdated] = useState(null);  // Store the last update time
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);  // State to toggle the menu
+
+  const [reportGenerated, setReportGenerated] = useState(false);
+
 
 
     // Function to handle opening and closing the menu
@@ -148,6 +152,15 @@ const SmartDrain = () => {
     return () => clearInterval(interval);
   }, []);
 
+
+
+    // Report Generation Function
+    const handleGenerateReport = () => {
+      // Logic to generate report using chart data
+      console.log('Report generated using chart data');
+      setReportGenerated(true);
+    };
+
   return (
     // JSX code 
 <Container fluid className="smart-drain-system">
@@ -164,6 +177,8 @@ const SmartDrain = () => {
   {/* Menu Sidebar */}
   <div className={`menu-sidebar ${isMenuOpen ? 'open' : ''}`}>
     <Button onClick={handleLogout} className="menu-button">Logout</Button>
+    <Button onClick={handleGenerateReport} className="menu-button">Generate Report</Button>
+
     <Button className="close-sidebar" onClick={toggleMenu}>Close Sidebar</Button> {/* Close button */}
   </div>
 
@@ -521,8 +536,16 @@ const SmartDrain = () => {
         <p>Last Updated: {lastUpdated ? lastUpdated : 'Never'}</p>  {/* Display last updated time */}
         <DrainwaterTable onFilterData={handleRealTimeUpdate} />
       </div>
+
       </Card>
+      <footer className="footer">
+  <p>&copy; 2024 SmartDrain System. All rights reserved.</p>
+  <a href="#">Contact Us</a> | <a href="#">Privacy Policy</a>
+</footer>
+{reportGenerated && <p className="report-status">Report has been successfully generated!</p>}
+
     </Container>
+    
   );
 };
 
