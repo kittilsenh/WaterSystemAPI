@@ -28,18 +28,43 @@ const Login = ({ onLogin }) => {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError('');
 
-    setTimeout(() => {
-      if (username === '1' && password === '1') {
+    // Prepare the login data
+    const loginData = {
+      username,
+      password,
+    };
+
+    try {
+      // Send the POST request to the API endpoint
+      const response = await fetch('http://64.227.152.179:8080/drainwater-0.1/drainwater/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(loginData),
+      });
+
+      const result = await response.json();
+
+      // Handle the response from the API
+      if (response.ok && result.status === 'Login successful') {
+        // Perform login action (you can redirect the user or do something else)
         onLogin();
       } else {
+        // Display an error message if login fails
         setError('Invalid credentials. Please try again.');
-        setIsSubmitting(false);
       }
-    }, 1000);
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('An error occurred during login. Please try again later.');
+    }
+
+    setIsSubmitting(false);
   };
 
   return (
@@ -83,7 +108,9 @@ const Login = ({ onLogin }) => {
           </div>
           {error && <p className="login-error-message">{error}</p>}
           <button type="submit" className="login-button" disabled={isSubmitting}>
-            {isSubmitting ? 'Logging in...' : 'Login'}
+            {isSubmitting ? (
+              <span className="login-spinner"></span> // Add spinner here if necessary
+            ) : 'Login'}
           </button>
           <div className="login-forgot-password">
             <a href="#">Forgot Password?</a>
