@@ -7,6 +7,9 @@ import './SmartDrain.css';
 
 import { FaBars } from 'react-icons/fa';  // Import the FaBars icon
 
+import jsPDF from 'jspdf';  // Import jsPDF for PDF generation
+import html2canvas from 'html2canvas';  // Import html2canvas for canvas to image conversion
+
 const SmartDrain = () => {
   const [waterLevel, setWaterLevel] = useState(60);  // Default water level
   const [sensor1Data, setSensor1Data] = useState(null);
@@ -154,12 +157,43 @@ const SmartDrain = () => {
 
 
 
-    // Report Generation Function
+  // Function to generate a PDF report
+
     const handleGenerateReport = () => {
-      // Logic to generate report using chart data
-      console.log('Report generated using chart data');
-      setReportGenerated(true);
-    };
+      const input = document.querySelector('.graph-container'); // Assuming the chart is in a div with this class
+
+      html2canvas(input).then((canvas) => {
+        const imgData = canvas.toDataURL('image/png');
+
+      // Get the dimensions of the canvas
+    const imgWidth = 210;  // A4 width in mm
+    const pageHeight = 295;  // A4 height in mm
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;  // Maintain aspect ratio
+    let heightLeft = imgHeight;
+
+    const pdf = new jsPDF('p', 'mm', 'a4');  // Create PDF of A4 size
+    let position = 0;
+
+    // If the content is higher than a single page
+    if (heightLeft > pageHeight) {
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      position -= pageHeight;
+
+      // Add more pages if necessary
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+    } else {
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    }
+
+    pdf.save("report.pdf");
+  });
+};
 
   return (
     // JSX code 
@@ -177,15 +211,14 @@ const SmartDrain = () => {
   {/* Menu Sidebar */}
   <div className={`menu-sidebar ${isMenuOpen ? 'open' : ''}`}>
     <Button onClick={handleLogout} className="menu-button">Logout</Button>
-    <Button onClick={handleGenerateReport} className="menu-button">Generate Report</Button>
+    <Button onClick={handleGenerateReport} className="close-sidebar">Generate Report</Button>
+    {reportGenerated && <p className="report-status">Report has been successfully generated!</p>}
 
     <Button className="close-sidebar" onClick={toggleMenu}>Close Sidebar</Button> {/* Close button */}
   </div>
 
     {/* Overlay to close the sidebar when clicking outside */}
     {isMenuOpen && <div className="menu-overlay" onClick={toggleMenu}></div>}
-
-    
 
       <Card className="parent-card">
         <Row>
@@ -539,10 +572,9 @@ const SmartDrain = () => {
 
       </Card>
       <footer className="footer">
-  <p>&copy; 2024 SmartDrain System. All rights reserved.</p>
-  <a href="#">Contact Us</a> | <a href="#">Privacy Policy</a>
-</footer>
-{reportGenerated && <p className="report-status">Report has been successfully generated!</p>}
+        <p>&copy; 2024 SmartDrain System. All rights reserved.</p>
+        <a href="#">Contact Us</a> | <a href="#">Privacy Policy</a>
+      </footer>
 
     </Container>
     
