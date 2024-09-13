@@ -14,8 +14,6 @@ const SmartDrain = () => {
 
   const [lastUpdated, setLastUpdated] = useState(null);  // Store the last update time
 
-
-
   // Fetch initial data from the API
   useEffect(() => {
     const fetchData = async () => {
@@ -95,7 +93,6 @@ const SmartDrain = () => {
     };
   };
 
-  
     // Example function where you fetch new data
     const fetchData = async () => {
       try {
@@ -131,10 +128,9 @@ const SmartDrain = () => {
     // Cleanup interval on component unmount
     return () => clearInterval(interval);
   }, []);
-  
-  
 
   return (
+    // JSX code 
     <Container fluid className="smart-drain-system">
       <Row>
         <Col>
@@ -148,6 +144,7 @@ const SmartDrain = () => {
             <Card.Body className="tank-container">
               <div className="water-tank-container">
                 <div className="water-tank">
+                  {/* Water level visualization */}
                   <Wavify
                     fill={waterColor}
                     paused={false}
@@ -165,7 +162,7 @@ const SmartDrain = () => {
                       zIndex: 1,
                     }}
                   />
-                  <div 
+                  <div
                     style={{
                       position: 'absolute',
                       bottom: `${waterLevel / 7.5}%`,

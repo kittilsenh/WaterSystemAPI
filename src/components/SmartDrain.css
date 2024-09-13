@@ -396,7 +396,6 @@ html, body {
     animation: colorChange 3s linear infinite; /* 2 seconds for full cycle */
   }
 
-  
   .skeleton {
     background-color: #e0e0e0;
     height: 20px;
@@ -423,6 +422,4 @@ html, body {
     100% {
       opacity: 1;
     }
-  }
-  
-  
+  }  
