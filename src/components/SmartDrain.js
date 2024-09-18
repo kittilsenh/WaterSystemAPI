@@ -28,6 +28,7 @@ const SmartDrain = () => {
   const [depth1, setDepth1] = useState(54.56); // Depth for Sensor 01
   const [depth2, setDepth2] = useState(36.1);  // Depth for Sensor 02
   
+  const macAddress1 = "0C:B8:15:D7:33:D0";      // MAC address of Sensor 01
   const macAddress2 = "CC:DB:A7:30:4A:B0";       // MAC address of Sensor 02
 
 
@@ -53,39 +54,29 @@ const SmartDrain = () => {
 // Fetch data function
 const fetchData = async () => {
   try {
-    // Fetch all data
-    const response = await fetch('http://64.227.152.179:8080/drainwater-0.1/drainwater/all');
-    const result = await response.json();
-    const allData = result.DrnList;
+    // Fetch data for Sensor 01
+    const response1 = await fetch(`http://64.227.152.179:8080/drainwater-0.1/drainwater/macAddress?macAddress=${macAddress1}`);
+    const result1 = await response1.json();
+    const sensor1DataList = result1.DrnList || [];
+    const latestSensor1Data = sensor1DataList.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+    setSensor1Data(latestSensor1Data);
 
-    // Check if 'macAddress' field is available
-    if (allData.length > 0 && allData[0].hasOwnProperty('macAddress')) {
-      // Separate data for Sensor 02 using macAddress2
-      const sensor2DataList = allData.filter(item => item.macAddress === macAddress2);
-      const latestSensor2Data = sensor2DataList.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
-      setSensor2Data(latestSensor2Data);
+    // Fetch data for Sensor 02
+    const response2 = await fetch(`http://64.227.152.179:8080/drainwater-0.1/drainwater/macAddress?macAddress=${macAddress2}`);
+    const result2 = await response2.json();
+    const sensor2DataList = result2.DrnList || [];
+    const latestSensor2Data = sensor2DataList.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+    setSensor2Data(latestSensor2Data);
 
-      // Assume remaining data is from Sensor 01
-      const sensor1DataList = allData.filter(item => item.macAddress !== macAddress2);
-      const latestSensor1Data = sensor1DataList.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
-      setSensor1Data(latestSensor1Data);
-
-      // Combine all data
-      setSensorData(allData);
-    } else {
-      // If 'macAddress' is not available, we might need to find another identifier
-      // For now, we can sort all data and assign the latest entries
-      const sortedData = allData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-      setSensor1Data(sortedData[0]); // Latest data as Sensor 01
-      setSensor2Data(sortedData[1] || null); // Second latest as Sensor 02 (if available)
-      setSensorData(allData);
-    }
+    // Combine data for graphing or other purposes
+    setSensorData([...sensor1DataList, ...sensor2DataList]);
 
     updateLastUpdatedTime(); // Update the timestamp
   } catch (error) {
     console.error('Error fetching data:', error);
   }
 };
+
     
     fetchData();
   }, []);
