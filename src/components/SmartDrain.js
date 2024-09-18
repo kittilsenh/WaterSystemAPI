@@ -49,8 +49,7 @@ const SmartDrain = () => {
 
     
 
-  // Fetch initial data from the API
-  useEffect(() => {
+
 // Fetch data function
 const fetchData = async () => {
   try {
@@ -81,9 +80,11 @@ const fetchData = async () => {
   }
 };
 
-    
-    fetchData();
-  }, []);
+useEffect(() => {
+  fetchData(); // Initial data fetch
+  const interval = setInterval(fetchData, 10000); // Poll every 10 seconds
+  return () => clearInterval(interval); // Cleanup on unmount
+}, []);
 
 
   useEffect(() => {
@@ -160,17 +161,7 @@ console.log('depth1:', depth1);
     };
   };
 
-    // Example function where you fetch new data
-    const fetchData = async () => {
-      try {
-        const response = await fetch('http://64.227.152.179:8080/drainwater-0.1/drainwater/all');
-        const result = await response.json();
-        setSensorData(result.DrnList);  // Update your data here
-        updateLastUpdatedTime();  // Update the "last updated" timestamp
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
+
 
     // Function to update the last updated timestamp
     const updateLastUpdatedTime = () => {
@@ -618,7 +609,7 @@ console.log('depth1:', depth1);
           {sensor2Data && sensor2Data.distance ? (
             sensor2Data.distance + ' m'
           ) : (
-            'Data Not Available'
+            <div className="skeleton text"></div>
           )}
         </p>
         <p>
