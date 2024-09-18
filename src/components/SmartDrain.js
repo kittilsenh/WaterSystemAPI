@@ -60,6 +60,8 @@ const fetchData = async () => {
     const sensor1DataList = result1.DrnList || [];
     const latestSensor1Data = sensor1DataList.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
     setSensor1Data(latestSensor1Data);
+    console.log('Sensor 01 Data:', latestSensor1Data);
+
 
     // Fetch data for Sensor 02
     const response2 = await fetch(`http://64.227.152.179:8080/drainwater-0.1/drainwater/macAddress?macAddress=${macAddress2}`);
@@ -67,6 +69,8 @@ const fetchData = async () => {
     const sensor2DataList = result2.DrnList || [];
     const latestSensor2Data = sensor2DataList.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
     setSensor2Data(latestSensor2Data);
+    console.log('Sensor 02 Data:', latestSensor2Data);
+
 
     // Combine data for graphing or other purposes
     setSensorData([...sensor1DataList, ...sensor2DataList]);
@@ -81,6 +85,17 @@ const fetchData = async () => {
     fetchData();
   }, []);
 
+
+  useEffect(() => {
+    fetchData(); // Initial data fetch
+    const interval = setInterval(fetchData, 10000); // Poll every 10 seconds
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, []);
+
+  console.log('Sensor 02 Data:', sensor2Data);
+  console.log('depth2:', depth2);
+
+  
 
   // Update sensor 1 and sensor 2 data whenever new sensor data is received
   useEffect(() => {
@@ -184,7 +199,6 @@ console.log('depth1:', depth1);
 
 
   // Function to generate a PDF report
-
     const handleGenerateReport = () => {
       const input = document.querySelector('.graph-container'); // Assuming the chart is in a div with this class
 
@@ -582,29 +596,45 @@ console.log('depth1:', depth1);
     <div className="sensor-info">
       <div className="sensor-labels">
         <p>
-          <strong>SPEED:</strong>{' '}
+        <strong>SPEED:</strong>{' '}
           {sensor2Data ? (
-            calculateVelocity(sensor2Data.distance, depth2) + ' m/s'
+            (() => {
+              const distance = parseFloat(sensor2Data.distance);
+              const depth = parseFloat(depth1);
+              console.log('Sensor 01 - distance:', distance, 'depth:', depth);
+              if (isNaN(distance) || isNaN(depth)) {
+                console.error('Invalid distance or depth for Sensor 01');
+                return 'N/A';
+              }
+              const speed = calculateVelocity(distance, depth);
+              return speed + ' m/s';
+            })()
           ) : (
             <div className="skeleton text"></div>
           )}
         </p>
         <p>
           <strong>WATER DEPTH:</strong>{' '}
-          {sensor2Data ? (
+          {sensor2Data && sensor2Data.distance ? (
             sensor2Data.distance + ' m'
           ) : (
-            <div className="skeleton text"></div>
+            'Data Not Available'
           )}
         </p>
         <p>
-          <strong>FLOW RATE:</strong>{' '}
+        <strong>FLOW RATE:</strong>{' '}
           {sensor2Data ? (
-            calculateFlowRate(
-              calculateVelocity(sensor2Data.distance, depth2),
-              sensor2Data.distance,
-              depth2
-            ) + ' m³/s'
+            (() => {
+              const distance = parseFloat(sensor2Data.distance);
+              const depth = parseFloat(depth1);
+              if (isNaN(distance) || isNaN(depth)) {
+                console.error('Invalid distance or depth for Sensor 01');
+                return 'N/A';
+              }
+              const velocity = calculateVelocity(distance, depth);
+              const flowRate = calculateFlowRate(velocity, distance, depth);
+              return flowRate + ' m³/s';
+            })()
           ) : (
             <div className="skeleton text"></div>
           )}
@@ -640,6 +670,7 @@ console.log('depth1:', depth1);
     </div>
   </Card.Body>
 </Card>
+
 
           </Col>
         </Row>
