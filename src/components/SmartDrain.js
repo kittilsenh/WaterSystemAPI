@@ -25,7 +25,7 @@ const SmartDrain = () => {
   const [sensor2Data, setSensor2Data] = useState(null);
   const [sensorData, setSensorData] = useState([]);  // Hold all sensor data
 
-  const [depth1, setDepth1] = useState(54.56); // Depth for Sensor 01
+  const [depth1, setDepth1] = useState(54.56); // Depth for Sensor 01 This - the API
   const [depth2, setDepth2] = useState(36.1);  // Depth for Sensor 02
   
   const macAddress1 = "0C:B8:15:D7:33:D0";      // MAC address of Sensor 01
@@ -523,9 +523,18 @@ console.log('depth1:', depth1);
                     <p>
                       <strong>WATER DEPTH:</strong>{' '}
                       {sensor1Data ? (
-                        sensor1Data.distance + ' m'
+                        (() => {
+                          const depth = parseFloat(depth1);
+                          const distance = parseFloat(sensor1Data.distance);
+                          if (isNaN(depth) || isNaN(distance)) {
+                            console.error('Invalid depth or distance for Sensor 01');
+                            return 'N/A';
+                          }
+                          const waterDepth = depth - distance;
+                          return waterDepth.toFixed(2) + ' m';
+                        })()
                       ) : (
-                        <div className="skeleton text"></div> /* Skeleton Loader */
+                        <div className="skeleton text"></div>
                       )}
                     </p>
                     <p>
@@ -605,13 +614,23 @@ console.log('depth1:', depth1);
           )}
         </p>
         <p>
-          <strong>WATER DEPTH:</strong>{' '}
-          {sensor2Data && sensor2Data.distance ? (
-            sensor2Data.distance + ' m'
-          ) : (
-            <div className="skeleton text"></div>
-          )}
-        </p>
+            <strong>WATER DEPTH:</strong>{' '}
+            {sensor2Data ? (
+              (() => {
+                const depth = parseFloat(depth2);
+                const distance = parseFloat(sensor2Data.distance);
+                if (isNaN(depth) || isNaN(distance)) {
+                  console.error('Invalid depth or distance for Sensor 02');
+                  return 'N/A';
+                }
+                const waterDepth = depth - distance;
+                return waterDepth.toFixed(2) + ' m';
+              })()
+            ) : (
+              <div className="skeleton text"></div>
+            )}
+          </p>
+
         <p>
         <strong>FLOW RATE:</strong>{' '}
           {sensor2Data ? (
