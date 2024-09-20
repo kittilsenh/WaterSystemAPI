@@ -89,7 +89,7 @@ const Graph = ({ sensor1DataList, sensor2DataList, startDate, startTime, endDate
         borderWidth: 2,
         pointRadius: 3,
         pointBackgroundColor: 'rgba(75,192,192,1)',
-        showLine: false,  // Disable line between points
+        showLine: true,  // Disable line between points
       },
       {
         label: 'Sensor 02 Distance (m)',
@@ -99,7 +99,7 @@ const Graph = ({ sensor1DataList, sensor2DataList, startDate, startTime, endDate
         borderWidth: 2,
         pointRadius: 3,
         pointBackgroundColor: 'rgba(255,99,132,1)',
-        showLine: false,  // Disable line between points
+        showLine: true,  // Disable line between points
       },
     ],
   };

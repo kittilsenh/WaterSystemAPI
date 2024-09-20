@@ -634,3 +634,39 @@ html, body {
     font-size: 1.6rem;
   }
 }
+
+/* Smaller container for the time interval selectors and the graph */
+.time-interval-graph-container {
+  margin: 10px 0; /* Reduced space around the section */
+  padding: 10px; /* Less padding for a smaller look */
+  background-color: #f8f9fa;
+  border-radius: 5px; /* Slightly smaller rounded corners */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Lighter shadow */
+}
+
+/* Smaller layout for time interval selection */
+.time-interval-selection {
+  margin-bottom: 10px; /* Less space between the selectors and graph */
+}
+
+/* Compact graph wrapper */
+.graph-wrapper {
+  padding: 10px; /* Reduced padding for the graph container */
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 5px; /* Smaller rounded corners */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Lighter shadow */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .time-interval-selection {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .graph-wrapper {
+    width: 100%;
+    padding: 8px; /* Reduced padding for smaller screens */
+  }
+}

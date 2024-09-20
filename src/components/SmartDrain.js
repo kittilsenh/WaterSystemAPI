@@ -12,7 +12,6 @@ import html2canvas from 'html2canvas';  // Import html2canvas for canvas to imag
 import * as XLSX from 'xlsx';  // Import XLSX for Excel export
 import autoTable from 'jspdf-autotable';  // Import for table generation
 
-
 const SOCKET_URL = 'http://64.227.152.179:8080/drainwater-0.1/ws';  // WebSocket URL
 
 const SmartDrain = () => {
@@ -113,14 +112,11 @@ useEffect(() => {
   };
 }, []);
 
-
-
     const handleStartDateChange = (event) => setStartDate(event.target.value);
     const handleStartTimeChange = (event) => setStartTime(event.target.value);
     const handleEndDateChange = (event) => setEndDate(event.target.value);
     const handleEndTimeChange = (event) => setEndTime(event.target.value);
 
-  
   const updateLastUpdatedTime = () => {
     const currentTime = new Date().toLocaleTimeString();
     setLastUpdated(currentTime);
@@ -694,41 +690,42 @@ useEffect(() => {
 
       {/* Time Interval Selection */}
 
-      <Row>
-        <Col md={3}>
-          <Form.Group>
-            <Form.Label>Start Date and Time</Form.Label>
-            <Form.Control type="date" value={startDate} onChange={handleStartDateChange} />
-            <Form.Control type="time" value={startTime} onChange={handleStartTimeChange} />
-          </Form.Group>
-        </Col>
-        <Col md={3}>
-          <Form.Group>
-            <Form.Label>End Date and Time</Form.Label>
-            <Form.Control type="date" value={endDate} onChange={handleEndDateChange} />
-            <Form.Control type="time" value={endTime} onChange={handleEndTimeChange} />
-          </Form.Group>
-        </Col>
-      </Row>
-      
+{/* Time Interval Selection and Graph Container */}
+<div className="time-interval-graph-container">
+  <Row className="time-interval-selection">
+    <Col md={3}>
+      <Form.Group>
+        <Form.Label>Start Date</Form.Label>
+        <Form.Control type="date" value={startDate} onChange={handleStartDateChange} />
+        <Form.Label>Start Time</Form.Label>
+        <Form.Control type="time" value={startTime} onChange={handleStartTimeChange} />
+      </Form.Group>
+    </Col>
+    <Col md={3}>
+      <Form.Group>
+        <Form.Label>End Date</Form.Label>
+        <Form.Control type="date" value={endDate} onChange={handleEndDateChange} />
+        <Form.Label>End Time</Form.Label>
+        <Form.Control type="time" value={endTime} onChange={handleEndTimeChange} />
+      </Form.Group>
+    </Col>
+  </Row>
 
-          
-        {/* Real-time updates using DrainwaterTable */}
-        <div ref={graphRef}>
-        {/* Graph component */}
-        <Graph
-          sensor1DataList={sensor1DataList}
-          sensor2DataList={sensor2DataList}
-          startDate={startDate}
-          startTime={startTime}
-          endDate={endDate}
-          endTime={endTime}
-        />
-      </div>
+  {/* Graph Container */}
+  <div className="graph-wrapper" ref={graphRef}>
+    <Graph
+      sensor1DataList={sensor1DataList}
+      sensor2DataList={sensor2DataList}
+      startDate={startDate}
+      startTime={startTime}
+      endDate={endDate}
+      endTime={endTime}
+    />
+  </div>
+</div>
 
 
 
-  
       </Card>
       <footer className="footer">
         <p>&copy; 2024 SmartDrain System. All rights reserved.</p>
