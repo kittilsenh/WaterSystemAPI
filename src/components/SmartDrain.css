@@ -230,23 +230,45 @@ html, body {
     text-align: center;
 }
 
+/* Graph container styles */
 .graph-container {
-    padding: 20px;
-    width: 80%;
-    max-width: 1000px;
-    margin: 0 auto; /* Centers the graph on the page */
-    background-color: #f7f9fc; /* Light background */
-    border-radius: 15px; /* Rounded corners */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-    border: 1px solid #e0e0e0; /* Light border */
+  padding: 20px;
+  margin: 0 auto;
+  max-width: 200px; /* Max width to ensure it's not too wide */
+  background-color: #ffffff; /* White background for contrast */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for a modern look */
+  margin-bottom: 30px; /* Add space between sections */
+  overflow: hidden; /* Prevent content overflow */
 }
 
-.graph-container h2 {
-    font-family: 'Poppins', sans-serif; /* Change to a modern font */
-    font-weight: 600;
-    color: #333; /* Darker font color */
-    text-align: center;
-    margin-bottom: 65px;
+/* Graph title styles */
+.graph-container h3 {
+  text-align: center;
+  font-size: 1.8rem;
+  color: #004080; /* Darker font for readability */
+  margin-bottom: 20px; /* Space below the title */
+  font-family: 'Poppins', sans-serif; /* Font to match the modern look */
+}
+
+/* Styling for the no data message */
+.graph-container p {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #dc3545; /* Red color to indicate no data */
+  margin-top: 20px;
+}
+
+/* Adjust responsive design */
+@media (max-width: 768px) {
+  .graph-container {
+    padding: 15px;
+    max-width: 100%; /* Full width on smaller screens */
+  }
+
+  .graph-container h3 {
+    font-size: 1.6rem;
+  }
 }
 
 .graph-container label {
@@ -533,4 +555,82 @@ html, body {
 
 .footer a:hover {
     text-decoration: underline;
+}
+
+/* Graph container styles */
+.graph-container {
+  padding: 20px;
+  margin: 0 auto;
+  max-width: 00px;
+  background-color: #f8f9fa; /* Light background for contrast */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for a modern look */
+  margin-bottom: 30px; /* Add space between sections */
+}
+
+/* Graph title styles */
+.graph-container h3 {
+  text-align: center;
+  font-size: 1.8rem;
+  color: #333; /* Darker font for readability */
+  margin-bottom: 20px; /* Space below the title */
+}
+
+/* Styling for the no data message */
+.graph-container p {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #dc3545; /* Red color to indicate no data */
+  margin-top: 20px;
+}
+
+/* Form styles for date and time selectors */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  font-size: 1.1rem;
+  color: #495057;
+  margin-bottom: 8px;
+}
+
+.form-control {
+  width: 100%;
+  max-width: 250px;
+  border-radius: 5px;
+  padding: 8px;
+  font-size: 1rem;
+  border: 1px solid #ced4da;
+  background-color: #fff;
+  transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: #80bdff;
+  outline: none;
+  box-shadow: 0 0 8px rgba(128, 189, 255, 0.3);
+}
+
+/* Responsive styling for smaller screens */
+@media (max-width: 768px) {
+  .graph-container {
+    padding: 15px;
+    max-width: 100%;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-control {
+    max-width: 100%;
+  }
+
+  .graph-container h3 {
+    font-size: 1.6rem;
+  }
 }

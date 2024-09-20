@@ -1,145 +1,253 @@
-import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Card, Button } from 'react-bootstrap';
+import React, { useEffect, useState, useRef } from 'react';
+import { Container, Row, Col, Card, Button, Form } from 'react-bootstrap';
 import Wavify from 'react-wavify';
 import Graph from './Graph';  // Import the Graph component
 import DrainwaterTable from './DrainwaterTable';  // Import real-time data handler
 import './SmartDrain.css';
-
+import SockJS from 'sockjs-client';  // Import SockJS for WebSocket connection
+import { Stomp } from '@stomp/stompjs';  // Import Stomp for WebSocket messaging
 import { FaBars } from 'react-icons/fa';  // Import the FaBars icon
-
 import jsPDF from 'jspdf';  // Import jsPDF for PDF generation
 import html2canvas from 'html2canvas';  // Import html2canvas for canvas to image conversion
+import * as XLSX from 'xlsx';  // Import XLSX for Excel export
+import autoTable from 'jspdf-autotable';  // Import for table generation
+
+
+const SOCKET_URL = 'http://64.227.152.179:8080/drainwater-0.1/ws';  // WebSocket URL
 
 const SmartDrain = () => {
   const [waterLevel, setWaterLevel] = useState(60);  // Default water level
-
-
-
   const [lastUpdated, setLastUpdated] = useState(null);  // Store the last update time
-
   const [isMenuOpen, setIsMenuOpen] = useState(false);  // State to toggle the menu
-
   const [reportGenerated, setReportGenerated] = useState(false);
-
   const [sensor1Data, setSensor1Data] = useState(null);
   const [sensor2Data, setSensor2Data] = useState(null);
   const [sensorData, setSensorData] = useState([]);  // Hold all sensor data
 
-  const [depth1, setDepth1] = useState(54.56); // Depth for Sensor 01 This - the API
-  const [depth2, setDepth2] = useState(36.1);  // Depth for Sensor 02
+  const graphRef = useRef(null);  // Define graphRef using useRef
+
+  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);  // Start date
+  const [startTime, setStartTime] = useState('00:00');  // Start time
+  const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);  // End date
+  const [endTime, setEndTime] = useState('23:59');  // End time
+
+  const depth1 = 54.56; // Depth for Sensor 01 This - the API
+  const depth2 = 36.1;  // Depth for Sensor 02
   
   const macAddress1 = "0C:B8:15:D7:33:D0";      // MAC address of Sensor 01
-  const macAddress2 = "CC:DB:A7:30:4A:B0";       // MAC address of Sensor 02
-
-
+  const macAddress2 = "CC:DB:A7:30:4A:B0";      // MAC address of Sensor 02
 
     // Function to handle opening and closing the menu
     const toggleMenu = () => {
       setIsMenuOpen(!isMenuOpen);
     };
   
+  // Function to handle logout
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');  // Replace with your session/token key
+    window.location.href = '/login';  // Replace '/login' with the correct login route
+  };
 
-    // Logout handler function
-    const handleLogout = () => {
-      // Clear authentication data (localStorage or other session data)
-      localStorage.removeItem('authToken');  // Replace with your session/token key
-      // Redirect to the login page
-      window.location.href = '/login';  // Replace '/login' with the correct login route
+    const [sensor1DataList, setSensor1DataList] = useState([]);
+    const [sensor2DataList, setSensor2DataList] = useState([]);
+
+      // Fetch historical data from the backend when the page loads
+  useEffect(() => {
+    const fetchHistoricalData = async () => {
+      try {
+        // Fetch data for Sensor 01
+        const response1 = await fetch(`http://64.227.152.179:8080/drainwater-0.1/drainwater/macAddress?macAddress=${macAddress1}`);
+        const result1 = await response1.json();
+        const sensor1HistoricalData = result1.DrnList || [];
+        const latestSensor1Data = sensor1HistoricalData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+        setSensor1DataList(sensor1HistoricalData);  // Set all historical data
+        console.log('Sensor 01 Data:', latestSensor1Data);
+
+        // Fetch data for Sensor 02
+        const response2 = await fetch(`http://64.227.152.179:8080/drainwater-0.1/drainwater/macAddress?macAddress=${macAddress2}`);
+        const result2 = await response2.json();
+        const sensor2HistoricalData = result2.DrnList || [];
+        const latestSensor2Data = sensor2HistoricalData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+        setSensor2DataList(sensor2HistoricalData);  // Set all historical data
+        console.log('Sensor 02 Data:', latestSensor2Data);
+        
+      } catch (error) {
+        console.error("Error fetching historical data:", error);
+      }
     };
 
+    fetchHistoricalData();
+  }, []);
+    
+    useEffect(() => {
+      const socket = new SockJS(SOCKET_URL);
+      const stompClient = Stomp.over(socket);
+    
+      stompClient.connect({}, () => {
+        stompClient.subscribe('/topic/drainwater', (message) => {
+          const newDrn = JSON.parse(message.body);
+          const macAddress = newDrn.macAddress;
+    
+          if (macAddress === macAddress1) {
+            setSensor1Data(newDrn);  // Update Sensor 01 Data
+            setSensor1DataList(prevData => [...prevData, newDrn]);  // Append new data to the list
+          } else if (macAddress === macAddress2) {
+            setSensor2Data(newDrn);  // Update Sensor 02 Data
+            setSensor2DataList(prevData => [...prevData, newDrn]);  // Append new data to the list
+          }
+    
+          setLastUpdated(new Date().toLocaleTimeString());  // Update last update time
+        });
+      });
+    
+      return () => {
+        if (stompClient) {
+          stompClient.disconnect();
+        }
+      };
+    }, []);
+
+
+    const handleStartDateChange = (event) => setStartDate(event.target.value);
+    const handleStartTimeChange = (event) => setStartTime(event.target.value);
+    const handleEndDateChange = (event) => setEndDate(event.target.value);
+    const handleEndTimeChange = (event) => setEndTime(event.target.value);
+
+  
+  const updateLastUpdatedTime = () => {
+    const currentTime = new Date().toLocaleTimeString();
+    setLastUpdated(currentTime);
+  };
+
+    // Function to generate the PDF report
+    const handleGenerateReport = async () => {
+      if (!graphRef.current) {
+        console.error('Graph element not found');
+        return;
+      }
+    
+      try {
+        const canvas = await html2canvas(graphRef.current);
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF();
+        const imgWidth = 190;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+    
+        const startDateTime = new Date(`${startDate}T${startTime}`);
+        const endDateTime = new Date(`${endDate}T${endTime}`);
+    
+        const filteredSensor1Data = sensor1DataList.filter(data => {
+          const dataDateTime = new Date(data.timestamp);
+          return dataDateTime >= startDateTime && dataDateTime <= endDateTime;
+        });
+    
+        const filteredSensor2Data = sensor2DataList.filter(data => {
+          const dataDateTime = new Date(data.timestamp);
+          return dataDateTime >= startDateTime && dataDateTime <= endDateTime;
+        });
+    
+        // Prepare table data for the PDF, including MAC Addresses, Voltage, Speed (Velocity), and Flow Rate
+        const tableStartY = imgHeight + 20;
+        const tableData = filteredSensor1Data.map((data, index) => [
+          new Date(data.timestamp).toLocaleString(),
+          macAddress1, // MAC Address for Sensor 1
+          data.distance,
+          data.voltage || 'N/A', // Voltage for Sensor 1
+          calculateVelocity(data.distance, depth1), // Speed for Sensor 1
+          calculateFlowRate(calculateVelocity(data.distance, depth1), data.distance, depth1), // Flow Rate for Sensor 1
+          macAddress2, // MAC Address for Sensor 2
+          filteredSensor2Data[index]?.distance || 'N/A',
+          filteredSensor2Data[index]?.voltage || 'N/A', // Voltage for Sensor 2
+          filteredSensor2Data[index] ? calculateVelocity(filteredSensor2Data[index].distance, depth2) : 'N/A', // Speed for Sensor 2
+          filteredSensor2Data[index] ? calculateFlowRate(calculateVelocity(filteredSensor2Data[index].distance, depth2), filteredSensor2Data[index].distance, depth2) : 'N/A', // Flow Rate for Sensor 2
+        ]);
+    
+        // Add the table to the PDF, including MAC Address, Voltage, Speed, and Flow Rate
+        autoTable(pdf, {
+          startY: tableStartY,
+          head: [['Timestamp', 'Sensor 1 MAC Address', 'Distance (m)', 'Voltage', 'Speed (m/s)', 'Flow Rate (m³/s)', 'Sensor 2 MAC Address', 'Distance (m)', 'Voltage', 'Speed (m/s)', 'Flow Rate (m³/s)']],
+          body: tableData,
+        });
+    
+        // Save filtered data to Excel as well
+        generateExcel(filteredSensor1Data, filteredSensor2Data, startDate, startTime, endDate, endTime);
+    
+        // Save the PDF file
+        pdf.save('graph-report-with-table.pdf');
+    
+      } catch (error) {
+        console.error('Error generating report:', error);
+      }
+    };
+    
+    
+    
+  
+    // Function to generate an Excel file with sensor data
+    const generateExcel = (sensor1DataList, sensor2DataList, startDate, startTime, endDate, endTime) => {
+      const startDateTime = new Date(`${startDate}T${startTime}`);
+      const endDateTime = new Date(`${endDate}T${endTime}`);
+    
+      const filteredSensor1Data = sensor1DataList.filter(data => {
+        const dataDateTime = new Date(data.timestamp);
+        return dataDateTime >= startDateTime && dataDateTime <= endDateTime;
+      });
+    
+      const filteredSensor2Data = sensor2DataList.filter(data => {
+        const dataDateTime = new Date(data.timestamp);
+        return dataDateTime >= startDateTime && dataDateTime <= endDateTime;
+      });
+    
+      // Include MAC addresses, Voltage, Speed (Velocity), and Flow Rate in the Excel sheet
+      const wsData = [
+        ['Timestamp', 'Sensor 1 MAC Address', 'Sensor 1 Distance (m)', 'Sensor 1 Voltage', 'Sensor 1 Speed (m/s)', 'Sensor 1 Flow Rate (m³/s)', 'Sensor 2 MAC Address', 'Sensor 2 Distance (m)', 'Sensor 2 Voltage', 'Sensor 2 Speed (m/s)', 'Sensor 2 Flow Rate (m³/s)'],
+        ...filteredSensor1Data.map((data, index) => [
+          data.timestamp,
+          macAddress1, // MAC Address for Sensor 1
+          data.distance,
+          data.voltage || 'N/A', // Voltage for Sensor 1
+          calculateVelocity(data.distance, depth1), // Speed for Sensor 1
+          calculateFlowRate(calculateVelocity(data.distance, depth1), data.distance, depth1), // Flow Rate for Sensor 1
+          macAddress2, // MAC Address for Sensor 2
+          filteredSensor2Data[index]?.distance || 'N/A',
+          filteredSensor2Data[index]?.voltage || 'N/A', // Voltage for Sensor 2
+          filteredSensor2Data[index] ? calculateVelocity(filteredSensor2Data[index].distance, depth2) : 'N/A', // Speed for Sensor 2
+          filteredSensor2Data[index] ? calculateFlowRate(calculateVelocity(filteredSensor2Data[index].distance, depth2), filteredSensor2Data[index].distance, depth2) : 'N/A', // Flow Rate for Sensor 2
+        ]),
+      ];
+    
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+      XLSX.utils.book_append_sheet(wb, ws, 'SensorData');
+      XLSX.writeFile(wb, 'sensor-data.xlsx');
+    };
+    
+    
     
 
 
-// Fetch data function
-const fetchData = async () => {
-  try {
-    // Fetch data for Sensor 01
-    const response1 = await fetch(`http://64.227.152.179:8080/drainwater-0.1/drainwater/macAddress?macAddress=${macAddress1}`);
-    const result1 = await response1.json();
-    const sensor1DataList = result1.DrnList || [];
-    const latestSensor1Data = sensor1DataList.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
-    setSensor1Data(latestSensor1Data);
-    console.log('Sensor 01 Data:', latestSensor1Data);
-
-
-    // Fetch data for Sensor 02
-    const response2 = await fetch(`http://64.227.152.179:8080/drainwater-0.1/drainwater/macAddress?macAddress=${macAddress2}`);
-    const result2 = await response2.json();
-    const sensor2DataList = result2.DrnList || [];
-    const latestSensor2Data = sensor2DataList.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
-    setSensor2Data(latestSensor2Data);
-    console.log('Sensor 02 Data:', latestSensor2Data);
-
-
-    // Combine data for graphing or other purposes
-    setSensorData([...sensor1DataList, ...sensor2DataList]);
-
-    updateLastUpdatedTime(); // Update the timestamp
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  }
-};
-
-useEffect(() => {
-  fetchData(); // Initial data fetch
-  const interval = setInterval(fetchData, 10000); // Poll every 10 seconds
-  return () => clearInterval(interval); // Cleanup on unmount
-}, []);
-
-
-  useEffect(() => {
-    fetchData(); // Initial data fetch
-    const interval = setInterval(fetchData, 10000); // Poll every 10 seconds
-    return () => clearInterval(interval); // Cleanup on unmount
-  }, []);
-
-  console.log('Sensor 02 Data:', sensor2Data);
-  console.log('depth2:', depth2);
-
-  
-
-  // Update sensor 1 and sensor 2 data whenever new sensor data is received
-  useEffect(() => {
-    fetchData(); // Initial data fetch
-    const interval = setInterval(fetchData, 10000); // Poll every 10 seconds
-    return () => clearInterval(interval); // Cleanup on unmount
-  }, []);
-  
-
-  // Normalize water depth for display
-  const normalizeWaterDepth = (distance) => {
-    const maxDistance = 300;
-    const normalizedLevel = ((maxDistance - distance) / maxDistance) * 100;
-    return Math.max(0, Math.min(normalizedLevel, 100));  
-  };
-
+  // Function to calculate velocity
   const calculateVelocity = (distance, depth) => {
     const depthDistance = depth - distance;
-    if (depthDistance <= 0) {
-      return 0;
-    }
-    const numerator = 0.006 * depthDistance;
-    const denominator = 0.02 * depthDistance + 0.6;
-    const fraction = numerator / denominator;
-    const power = Math.pow(fraction, 2 / 3);
-    const velocity = (1 / 0.015) * power * Math.sqrt(0.010936);
-    return velocity.toFixed(5);
+    if (depthDistance <= 0) return 0;
+
+    const velocity = (1 / 0.015) *
+      Math.pow((0.006 * depthDistance) / (0.02 * depthDistance + 0.6), 2 / 3) *
+      Math.sqrt(0.010936);
+
+    return velocity.toFixed(5);  // Return calculated velocity
   };
   
+  // Function to calculate flow rate
   const calculateFlowRate = (velocity, distance, depth) => {
     const depthDistance = depth - distance;
-    if (depthDistance <= 0) {
-      return 0;
-    }
+    if (depthDistance <= 0) return 0;
+
     const flowRate = velocity * 0.006 * depthDistance;
-    return flowRate.toFixed(5);
+    return flowRate.toFixed(5);  // Return calculated flow rate
   };
   
-  // In the rendering part for Sensor 01
-console.log('Sensor 01 Data:', sensor1Data);
-console.log('depth1:', depth1);
-
-
   const calculateWaterLevelHeight = (distance) => {
     const maxDepth = 450;  // The max depth value
     const waterLevelPercentage = (distance / maxDepth) * 100; // Calculate percentage of max depth
@@ -163,69 +271,6 @@ console.log('depth1:', depth1);
 
 
 
-    // Function to update the last updated timestamp
-    const updateLastUpdatedTime = () => {
-      const currentTime = new Date().toLocaleTimeString();  // Get current time
-      setLastUpdated(currentTime);  // Set it to the lastUpdated state
-    };
-  
-  // Example WebSocket real-time update function
-  const handleRealTimeUpdate = (newData) => {
-    setSensorData(newData);  // Update your data
-    updateLastUpdatedTime();  // Update the "last updated" timestamp
-  };
-
-  // Poll the API every 10 seconds
-  useEffect(() => {
-    // Initial data fetch
-    fetchData();
-
-    // Set up polling every 10 seconds
-    const interval = setInterval(fetchData, 10000);  // 10 seconds = 10000 milliseconds
-
-    // Cleanup interval on component unmount
-    return () => clearInterval(interval);
-  }, []);
-
-
-
-  // Function to generate a PDF report
-    const handleGenerateReport = () => {
-      const input = document.querySelector('.graph-container'); // Assuming the chart is in a div with this class
-
-      html2canvas(input).then((canvas) => {
-        const imgData = canvas.toDataURL('image/png');
-
-      // Get the dimensions of the canvas
-    const imgWidth = 210;  // A4 width in mm
-    const pageHeight = 295;  // A4 height in mm
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;  // Maintain aspect ratio
-    let heightLeft = imgHeight;
-
-    const pdf = new jsPDF('p', 'mm', 'a4');  // Create PDF of A4 size
-    let position = 0;
-
-    // If the content is higher than a single page
-    if (heightLeft > pageHeight) {
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-      position -= pageHeight;
-
-      // Add more pages if necessary
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-    } else {
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-    }
-
-    pdf.save("report.pdf");
-  });
-};
-
   return (
     // JSX code 
 <Container fluid className="smart-drain-system">
@@ -242,6 +287,7 @@ console.log('depth1:', depth1);
   {/* Menu Sidebar */}
   <div className={`menu-sidebar ${isMenuOpen ? 'open' : ''}`}>
     <Button onClick={handleLogout} className="menu-button">Logout</Button>
+
     <Button onClick={handleGenerateReport} className="close-sidebar">Generate Report</Button>
     {reportGenerated && <p className="report-status">Report has been successfully generated!</p>}
 
@@ -492,79 +538,57 @@ console.log('depth1:', depth1);
             </Card.Body>
           </Col>
 
+          {/* Sensor 01 */}
           <Col md={6}>
-            {/* Sensor 01 */}
-            <Card className="sensor-card mb-4">
-              <Card.Body>
-                <div className="sensor-header">
-                  <h5 className="sensor-title">SENSOR 01</h5>
-                </div>
+  {/* Sensor 01 */}
+  <Card className="sensor-card mb-4">
+    <Card.Body>
+      <div className="sensor-header">
+        <h5 className="sensor-title">SENSOR 01</h5>
+      </div>
 
-                <div className="sensor-info">
-                  <div className="sensor-labels">
-                    <p>
-                    <strong>SPEED:</strong>{' '}
-          {sensor1Data ? (
-            (() => {
-              const distance = parseFloat(sensor1Data.distance);
-              const depth = parseFloat(depth1);
-              console.log('Sensor 01 - distance:', distance, 'depth:', depth);
-              if (isNaN(distance) || isNaN(depth)) {
-                console.error('Invalid distance or depth for Sensor 01');
-                return 'N/A';
-              }
-              const speed = calculateVelocity(distance, depth);
-              return speed + ' m/s';
-            })()
-          ) : (
-            <div className="skeleton text"></div>
-          )}
-                    </p>
-                    <p>
-                      <strong>WATER DEPTH:</strong>{' '}
-                      {sensor1Data ? (
-                        (() => {
-                          const depth = parseFloat(depth1);
-                          const distance = parseFloat(sensor1Data.distance);
-                          if (isNaN(depth) || isNaN(distance)) {
-                            console.error('Invalid depth or distance for Sensor 01');
-                            return 'N/A';
-                          }
-                          const waterDepth = depth - distance;
-                          return waterDepth.toFixed(2) + ' m';
-                        })()
-                      ) : (
-                        <div className="skeleton text"></div>
-                      )}
-                    </p>
-                    <p>
-                    <strong>FLOW RATE:</strong>{' '}
-          {sensor1Data ? (
-            (() => {
-              const distance = parseFloat(sensor1Data.distance);
-              const depth = parseFloat(depth1);
-              if (isNaN(distance) || isNaN(depth)) {
-                console.error('Invalid distance or depth for Sensor 01');
-                return 'N/A';
-              }
-              const velocity = calculateVelocity(distance, depth);
-              const flowRate = calculateFlowRate(velocity, distance, depth);
-              return flowRate + ' m³/s';
-            })()
-          ) : (
-            <div className="skeleton text"></div>
-          )}
-                    </p>
-                  </div>
-                </div>
+      <div className="sensor-info">
+        <div className="sensor-labels">
+          <p>
+            <strong>SPEED:</strong>{' '}
+            {sensor1Data ? (
+              calculateVelocity(sensor1Data.distance, depth1) + ' m/s'
+            ) : (
+              <div className="skeleton text"></div>
+            )}
+          </p>
+          <p>
+            <strong>WATER DEPTH:</strong>{' '}
+            {sensor1Data ? (
+              (depth1 - sensor1Data.distance).toFixed(2) + ' m'
+            ) : (
+              <div className="skeleton text"></div>
+            )}
+          </p>
+          <p>
+            <strong>FLOW RATE:</strong>{' '}
+            {sensor1Data ? (
+              calculateFlowRate(
+                calculateVelocity(sensor1Data.distance, depth1),
+                sensor1Data.distance,
+                depth1
+              ) + ' m³/s'
+            ) : (
+              <div className="skeleton text"></div>
+            )}
+          </p>
+        </div>
+      </div>
 
-                  <p className="battery-label">
-                    BATTERY LEVEL: {sensor1Data ? (
-                      sensor1Data.voltage
-                    ) : (
-                      <div className="skeleton text"></div> /* Skeleton Loader */
-                    )}
-                  </p>
+      <p className="battery-label">
+        <strong>BATTERY LEVEL:</strong>{' '}
+        {sensor1Data ? (
+          sensor1Data.voltage
+        ) : (
+          <div className="skeleton text"></div>
+        )}
+      </p>
+
       {/* Date and Time inside sensor-values div */}
       <div className="sensor-values">
         <p>
@@ -572,7 +596,7 @@ console.log('depth1:', depth1);
           {sensor1Data ? (
             formatTimestamp(sensor1Data.timestamp).date
           ) : (
-            <div className="skeleton text"></div> /* Skeleton Loader for Date */
+            <div className="skeleton text"></div>
           )}
         </p>
         <p>
@@ -580,125 +604,124 @@ console.log('depth1:', depth1);
           {sensor1Data ? (
             formatTimestamp(sensor1Data.timestamp).time
           ) : (
-            <div className="skeleton text"></div> /* Skeleton Loader for Time */
-          )}
-        </p>
-      </div>
-              </Card.Body>
-            </Card>
-
-{/* Sensor 02 */}
-<Card className="sensor-card mb-4">
-  <Card.Body>
-    <div className="sensor-header">
-      <h5 className="sensor-title">SENSOR 02</h5>
-    </div>
-    <div className="sensor-info">
-      <div className="sensor-labels">
-        <p>
-        <strong>SPEED:</strong>{' '}
-          {sensor2Data ? (
-            (() => {
-              const distance = parseFloat(sensor2Data.distance);
-              const depth = parseFloat(depth1);
-              console.log('Sensor 01 - distance:', distance, 'depth:', depth);
-              if (isNaN(distance) || isNaN(depth)) {
-                console.error('Invalid distance or depth for Sensor 01');
-                return 'N/A';
-              }
-              const speed = calculateVelocity(distance, depth);
-              return speed + ' m/s';
-            })()
-          ) : (
             <div className="skeleton text"></div>
           )}
         </p>
-        <p>
-            <strong>WATER DEPTH:</strong>{' '}
+      </div>
+    </Card.Body>
+  </Card>
+
+  {/* Sensor 02 */}
+  <Card className="sensor-card mb-4">
+    <Card.Body>
+      <div className="sensor-header">
+        <h5 className="sensor-title">SENSOR 02</h5>
+      </div>
+
+      <div className="sensor-info">
+        <div className="sensor-labels">
+          <p>
+            <strong>SPEED:</strong>{' '}
             {sensor2Data ? (
-              (() => {
-                const depth = parseFloat(depth2);
-                const distance = parseFloat(sensor2Data.distance);
-                if (isNaN(depth) || isNaN(distance)) {
-                  console.error('Invalid depth or distance for Sensor 02');
-                  return 'N/A';
-                }
-                const waterDepth = depth - distance;
-                return waterDepth.toFixed(2) + ' m';
-              })()
+              calculateVelocity(sensor2Data.distance, depth2) + ' m/s'
             ) : (
               <div className="skeleton text"></div>
             )}
           </p>
+          <p>
+            <strong>WATER DEPTH:</strong>{' '}
+            {sensor2Data ? (
+              (depth2 - sensor2Data.distance).toFixed(2) + ' m'
+            ) : (
+              <div className="skeleton text"></div>
+            )}
+          </p>
+          <p>
+            <strong>FLOW RATE:</strong>{' '}
+            {sensor2Data ? (
+              calculateFlowRate(
+                calculateVelocity(sensor2Data.distance, depth2),
+                sensor2Data.distance,
+                depth2
+              ) + ' m³/s'
+            ) : (
+              <div className="skeleton text"></div>
+            )}
+          </p>
+        </div>
+      </div>
 
+      <p className="battery-label">
+        <strong>BATTERY LEVEL:</strong>{' '}
+        {sensor2Data ? (
+          sensor2Data.voltage
+        ) : (
+          <div className="skeleton text"></div>
+        )}
+      </p>
+
+      {/* Date and Time inside sensor-values div */}
+      <div className="sensor-values">
         <p>
-        <strong>FLOW RATE:</strong>{' '}
+          <strong>DATE:</strong>{' '}
           {sensor2Data ? (
-            (() => {
-              const distance = parseFloat(sensor2Data.distance);
-              const depth = parseFloat(depth1);
-              if (isNaN(distance) || isNaN(depth)) {
-                console.error('Invalid distance or depth for Sensor 01');
-                return 'N/A';
-              }
-              const velocity = calculateVelocity(distance, depth);
-              const flowRate = calculateFlowRate(velocity, distance, depth);
-              return flowRate + ' m³/s';
-            })()
+            formatTimestamp(sensor2Data.timestamp).date
+          ) : (
+            <div className="skeleton text"></div>
+          )}
+        </p>
+        <p>
+          <strong>TIME:</strong>{' '}
+          {sensor2Data ? (
+            formatTimestamp(sensor2Data.timestamp).time
           ) : (
             <div className="skeleton text"></div>
           )}
         </p>
       </div>
-    </div>
-
-    <p className="battery-label">
-      BATTERY LEVEL: {sensor2Data ? (
-        sensor2Data.voltage
-      ) : (
-        <div className="skeleton text"></div>
-      )}
-    </p>
-
-    <div className="sensor-values">
-      <p>
-        <strong>DATE:</strong>{' '}
-        {sensor2Data ? (
-          formatTimestamp(sensor2Data.timestamp).date
-        ) : (
-          <div className="skeleton text"></div>
-        )}
-      </p>
-      <p>
-        <strong>TIME:</strong>{' '}
-        {sensor2Data ? (
-          formatTimestamp(sensor2Data.timestamp).time
-        ) : (
-          <div className="skeleton text"></div>
-        )}
-      </p>
-    </div>
-  </Card.Body>
-</Card>
+    </Card.Body>
+  </Card>
+</Col>
+</Row>
 
 
-          </Col>
-        </Row>
+      {/* Time Interval Selection */}
 
-        {/* Graph Section */}
-        <Row className="mt-5">
-          <Col>
-            <Graph sensorData={sensorData} />
-          </Col>
-        </Row>
+      <Row>
+        <Col md={3}>
+          <Form.Group>
+            <Form.Label>Start Date and Time</Form.Label>
+            <Form.Control type="date" value={startDate} onChange={handleStartDateChange} />
+            <Form.Control type="time" value={startTime} onChange={handleStartTimeChange} />
+          </Form.Group>
+        </Col>
+        <Col md={3}>
+          <Form.Group>
+            <Form.Label>End Date and Time</Form.Label>
+            <Form.Control type="date" value={endDate} onChange={handleEndDateChange} />
+            <Form.Control type="time" value={endTime} onChange={handleEndTimeChange} />
+          </Form.Group>
+        </Col>
+      </Row>
+      
 
+          
         {/* Real-time updates using DrainwaterTable */}
-     
-        <div className="last-updated">
-        <p>Last Updated: {lastUpdated ? lastUpdated : 'Never'}</p>  {/* Display last updated time */}
-        <DrainwaterTable onFilterData={handleRealTimeUpdate} />
+        <div ref={graphRef}>
+        {/* Graph component */}
+        <Graph
+          sensor1DataList={sensor1DataList}
+          sensor2DataList={sensor2DataList}
+          startDate={startDate}
+          startTime={startTime}
+          endDate={endDate}
+          endTime={endTime}
+        />
       </div>
 
+
+
+  
       </Card>
       <footer className="footer">
         <p>&copy; 2024 SmartDrain System. All rights reserved.</p>
