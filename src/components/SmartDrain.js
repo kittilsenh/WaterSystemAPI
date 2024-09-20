@@ -52,60 +52,67 @@ const SmartDrain = () => {
     const [sensor2DataList, setSensor2DataList] = useState([]);
 
       // Fetch historical data from the backend when the page loads
-  useEffect(() => {
-    const fetchHistoricalData = async () => {
-      try {
-        // Fetch data for Sensor 01
-        const response1 = await fetch(`http://64.227.152.179:8080/drainwater-0.1/drainwater/macAddress?macAddress=${macAddress1}`);
-        const result1 = await response1.json();
-        const sensor1HistoricalData = result1.DrnList || [];
-        const latestSensor1Data = sensor1HistoricalData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
-        setSensor1DataList(sensor1HistoricalData);  // Set all historical data
-        console.log('Sensor 01 Data:', latestSensor1Data);
+// Fetch historical data from the backend when the page loads
+useEffect(() => {
+  const fetchHistoricalData = async () => {
+    try {
+      // Fetch data for Sensor 01
+      const response1 = await fetch(`http://64.227.152.179:8080/drainwater-0.1/drainwater/macAddress?macAddress=${macAddress1}`);
+      const result1 = await response1.json();
+      const sensor1HistoricalData = result1.DrnList || [];
+      const latestSensor1Data = sensor1HistoricalData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+      setSensor1DataList(sensor1HistoricalData);  // Set all historical data
+      setSensor1Data(latestSensor1Data); // Set the most recent data for display
 
-        // Fetch data for Sensor 02
-        const response2 = await fetch(`http://64.227.152.179:8080/drainwater-0.1/drainwater/macAddress?macAddress=${macAddress2}`);
-        const result2 = await response2.json();
-        const sensor2HistoricalData = result2.DrnList || [];
-        const latestSensor2Data = sensor2HistoricalData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
-        setSensor2DataList(sensor2HistoricalData);  // Set all historical data
-        console.log('Sensor 02 Data:', latestSensor2Data);
-        
-      } catch (error) {
-        console.error("Error fetching historical data:", error);
+      console.log('Sensor 01 Data:', latestSensor1Data);
+
+      // Fetch data for Sensor 02
+      const response2 = await fetch(`http://64.227.152.179:8080/drainwater-0.1/drainwater/macAddress?macAddress=${macAddress2}`);
+      const result2 = await response2.json();
+      const sensor2HistoricalData = result2.DrnList || [];
+      const latestSensor2Data = sensor2HistoricalData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+      setSensor2DataList(sensor2HistoricalData);  // Set all historical data
+      setSensor2Data(latestSensor2Data); // Set the most recent data for display
+
+      console.log('Sensor 02 Data:', latestSensor2Data);
+      
+    } catch (error) {
+      console.error("Error fetching historical data:", error);
+    }
+  };
+
+  fetchHistoricalData();
+}, []);
+
+    
+useEffect(() => {
+  const socket = new SockJS(SOCKET_URL);
+  const stompClient = Stomp.over(socket);
+
+  stompClient.connect({}, () => {
+    stompClient.subscribe('/topic/drainwater', (message) => {
+      const newDrn = JSON.parse(message.body);
+      const macAddress = newDrn.macAddress;
+
+      if (macAddress === macAddress1) {
+        setSensor1Data(newDrn);  // Update Sensor 01 Data
+        setSensor1DataList(prevData => [...prevData, newDrn]);  // Append new data to the list
+      } else if (macAddress === macAddress2) {
+        setSensor2Data(newDrn);  // Update Sensor 02 Data
+        setSensor2DataList(prevData => [...prevData, newDrn]);  // Append new data to the list
       }
-    };
 
-    fetchHistoricalData();
-  }, []);
-    
-    useEffect(() => {
-      const socket = new SockJS(SOCKET_URL);
-      const stompClient = Stomp.over(socket);
-    
-      stompClient.connect({}, () => {
-        stompClient.subscribe('/topic/drainwater', (message) => {
-          const newDrn = JSON.parse(message.body);
-          const macAddress = newDrn.macAddress;
-    
-          if (macAddress === macAddress1) {
-            setSensor1Data(newDrn);  // Update Sensor 01 Data
-            setSensor1DataList(prevData => [...prevData, newDrn]);  // Append new data to the list
-          } else if (macAddress === macAddress2) {
-            setSensor2Data(newDrn);  // Update Sensor 02 Data
-            setSensor2DataList(prevData => [...prevData, newDrn]);  // Append new data to the list
-          }
-    
-          setLastUpdated(new Date().toLocaleTimeString());  // Update last update time
-        });
-      });
-    
-      return () => {
-        if (stompClient) {
-          stompClient.disconnect();
-        }
-      };
-    }, []);
+      setLastUpdated(new Date().toLocaleTimeString());  // Update last update time
+    });
+  });
+
+  return () => {
+    if (stompClient) {
+      stompClient.disconnect();
+    }
+  };
+}, []);
+
 
 
     const handleStartDateChange = (event) => setStartDate(event.target.value);
