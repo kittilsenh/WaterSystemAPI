@@ -325,7 +325,7 @@ useEffect(() => {
         calculateFlowRate(calculateVelocity(sensor1.distance, depth1), sensor1.distance, depth1)  // Flow Rate for Sensor 1
       ]);
   
-      // Row for Sensor 2 (if exists)
+      // Row for Sensor 2 (if exists) fixed
       if (sensor2) {
         wsData.push([
           sensor2.timestamp,
