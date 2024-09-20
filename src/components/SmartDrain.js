@@ -181,9 +181,6 @@ useEffect(() => {
       }
     };
     
-    
-    
-  
     // Function to generate an Excel file with sensor data
     const generateExcel = (sensor1DataList, sensor2DataList, startDate, startTime, endDate, endTime) => {
       const startDateTime = new Date(`${startDate}T${startTime}`);
@@ -201,7 +198,7 @@ useEffect(() => {
     
       // Include MAC addresses, Voltage, Speed (Velocity), and Flow Rate in the Excel sheet
       const wsData = [
-        ['Timestamp', 'Sensor 1 MAC Address', 'Sensor 1 Distance (m)', 'Sensor 1 Voltage', 'Sensor 1 Speed (m/s)', 'Sensor 1 Flow Rate (m³/s)', 'Sensor 2 MAC Address', 'Sensor 2 Distance (m)', 'Sensor 2 Voltage', 'Sensor 2 Speed (m/s)', 'Sensor 2 Flow Rate (m³/s)'],
+        ['Timestamp', 'Sensor 1 MAC Address', 'Sensor 1 Water Depth (m)', 'Sensor 1 Voltage', 'Sensor 1 Speed (m/s)', 'Sensor 1 Flow Rate (m³/s)', 'Sensor 2 MAC Address', 'Sensor 2 Water Depth (m)', 'Sensor 2 Voltage', 'Sensor 2 Speed (m/s)', 'Sensor 2 Flow Rate (m³/s)'],
         ...filteredSensor1Data.map((data, index) => [
           data.timestamp,
           macAddress1, // MAC Address for Sensor 1
@@ -284,7 +281,7 @@ useEffect(() => {
   
     // Prepare the Excel data
     const wsData = [
-      ['Timestamp', 'Sensor 1 MAC', 'Sensor 1 Distance', 'Sensor 1 Voltage', 'Sensor 1 Speed', 'Sensor 1 Flow', 'Sensor 2 MAC', 'Sensor 2 Distance', 'Sensor 2 Voltage', 'Sensor 2 Speed', 'Sensor 2 Flow'],
+      ['Timestamp', 'Sensor 1 MAC', 'Sensor 1 Water Depth', 'Sensor 1 Voltage', 'Sensor 1 Speed', 'Sensor 1 Flow', 'Sensor 2 MAC', 'Sensor 2 Water Depth', 'Sensor 2 Voltage', 'Sensor 2 Speed', 'Sensor 2 Flow'],
       ...filteredSensor1Data.map((data, index) => [
         data.timestamp,
         macAddress1, // Sensor 1 MAC Address
