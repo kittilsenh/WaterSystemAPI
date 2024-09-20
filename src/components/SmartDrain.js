@@ -724,8 +724,6 @@ useEffect(() => {
   </div>
 </div>
 
-
-
       </Card>
       <footer className="footer">
         <p>&copy; 2024 SmartDrain System. All rights reserved.</p>
