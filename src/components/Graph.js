@@ -11,6 +11,9 @@ const Graph = ({ sensor1DataList, sensor2DataList, startDate, startTime, endDate
   const [filteredSensor2Data, setFilteredSensor2Data] = useState([]);
   const [loading, setLoading] = useState(true);  // Add a loading state
 
+  const depth1 = 54.56; // Depth for Sensor 01
+  const depth2 = 36.1;  // Depth for Sensor 02
+
   // Helper function to combine date and time
   const combineDateTime = (date, time) => {
     const combined = `${date}T${time}:00`;  // Ensure correct formatting with ':00' for seconds
@@ -41,12 +44,12 @@ const Graph = ({ sensor1DataList, sensor2DataList, startDate, startTime, endDate
       // Filter Sensor 1 Data
       const filteredSensor1 = sensor1DataList
         .filter((data) => new Date(data.timestamp) >= start && new Date(data.timestamp) <= end)
-        .map((data) => ({ x: new Date(data.timestamp), y: data.distance }));
+        .map((data) => ({ x: new Date(data.timestamp), y: (depth1 - data.distance).toFixed(2) }));
 
       // Filter Sensor 2 Data
       const filteredSensor2 = sensor2DataList
         .filter((data) => new Date(data.timestamp) >= start && new Date(data.timestamp) <= end)
-        .map((data) => ({ x: new Date(data.timestamp), y: data.distance }));
+        .map((data) => ({ x: new Date(data.timestamp), y: (depth2 - data.distance).toFixed(2) }));
 
       // Set filtered data
       setFilteredSensor1Data(filteredSensor1);
@@ -120,7 +123,7 @@ const Graph = ({ sensor1DataList, sensor2DataList, startDate, startTime, endDate
 
   return (
     <div>
-      <h3>Sensor Data Over Time</h3>
+      <h3>Water Depth Over Time</h3>
       {loading ? (
         <LoadingSpinner />
       ) : filteredSensor1Data.length === 0 && filteredSensor2Data.length === 0 ? (

@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Container, Row, Col, Card, Button, Form } from 'react-bootstrap';
 import Wavify from 'react-wavify';
 import Graph from './Graph';  // Import the Graph component
-import DrainwaterTable from './DrainwaterTable';  // Import real-time data handler
 import './SmartDrain.css';
 import SockJS from 'sockjs-client';  // Import SockJS for WebSocket connection
 import { Stomp } from '@stomp/stompjs';  // Import Stomp for WebSocket messaging
@@ -63,6 +62,7 @@ useEffect(() => {
       setSensor1DataList(sensor1HistoricalData);  // Set all historical data
       setSensor1Data(latestSensor1Data); // Set the most recent data for display
 
+      // Console log the latest data for Sensor 01
       console.log('Sensor 01 Data:', latestSensor1Data);
 
       // Fetch data for Sensor 02
@@ -73,26 +73,28 @@ useEffect(() => {
       setSensor2DataList(sensor2HistoricalData);  // Set all historical data
       setSensor2Data(latestSensor2Data); // Set the most recent data for display
 
+      // Console log the latest data for Sensor 02
       console.log('Sensor 02 Data:', latestSensor2Data);
       
     } catch (error) {
       console.error("Error fetching historical data:", error);
     }
   };
-
   fetchHistoricalData();
 }, []);
 
-    
+// Establish WebSocket connection and subscribe to the '/topic/drainwater' endpoint    
 useEffect(() => {
   const socket = new SockJS(SOCKET_URL);
   const stompClient = Stomp.over(socket);
 
+  // Connect to the WebSocket server
   stompClient.connect({}, () => {
     stompClient.subscribe('/topic/drainwater', (message) => {
       const newDrn = JSON.parse(message.body);
       const macAddress = newDrn.macAddress;
 
+      // Update the sensor data based on the MAC address
       if (macAddress === macAddress1) {
         setSensor1Data(newDrn);  // Update Sensor 01 Data
         setSensor1DataList(prevData => [...prevData, newDrn]);  // Append new data to the list
@@ -100,11 +102,9 @@ useEffect(() => {
         setSensor2Data(newDrn);  // Update Sensor 02 Data
         setSensor2DataList(prevData => [...prevData, newDrn]);  // Append new data to the list
       }
-
       setLastUpdated(new Date().toLocaleTimeString());  // Update last update time
     });
   });
-
   return () => {
     if (stompClient) {
       stompClient.disconnect();
@@ -155,12 +155,12 @@ useEffect(() => {
         const tableData = filteredSensor1Data.map((data, index) => [
           new Date(data.timestamp).toLocaleString(),
           macAddress1, // MAC Address for Sensor 1
-          data.distance,
+          (depth1 - data.distance).toFixed(2),
           data.voltage || 'N/A', // Voltage for Sensor 1
           calculateVelocity(data.distance, depth1), // Speed for Sensor 1
           calculateFlowRate(calculateVelocity(data.distance, depth1), data.distance, depth1), // Flow Rate for Sensor 1
           macAddress2, // MAC Address for Sensor 2
-          filteredSensor2Data[index]?.distance || 'N/A',
+          filteredSensor2Data[index] ? (depth2 - filteredSensor2Data[index].distance).toFixed(2) : 'N/A', // Water Depth for Sensor 2
           filteredSensor2Data[index]?.voltage || 'N/A', // Voltage for Sensor 2
           filteredSensor2Data[index] ? calculateVelocity(filteredSensor2Data[index].distance, depth2) : 'N/A', // Speed for Sensor 2
           filteredSensor2Data[index] ? calculateFlowRate(calculateVelocity(filteredSensor2Data[index].distance, depth2), filteredSensor2Data[index].distance, depth2) : 'N/A', // Flow Rate for Sensor 2
@@ -175,10 +175,7 @@ useEffect(() => {
     
         // Save filtered data to Excel as well
         generateExcel(filteredSensor1Data, filteredSensor2Data, startDate, startTime, endDate, endTime);
-    
-        // Save the PDF file
         pdf.save('graph-report-with-table.pdf');
-    
       } catch (error) {
         console.error('Error generating report:', error);
       }
@@ -220,16 +217,13 @@ useEffect(() => {
         ]),
       ];
     
+      // Generate Excel file with the sensor data
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.aoa_to_sheet(wsData);
       XLSX.utils.book_append_sheet(wb, ws, 'SensorData');
       XLSX.writeFile(wb, 'sensor-data.xlsx');
     };
     
-    
-    
-
-
   // Function to calculate velocity
   const calculateVelocity = (distance, depth) => {
     const depthDistance = depth - distance;
@@ -251,6 +245,7 @@ useEffect(() => {
     return flowRate.toFixed(5);  // Return calculated flow rate
   };
   
+  // Function to calculate water level height
   const calculateWaterLevelHeight = (distance) => {
     const maxDepth = 450;  // The max depth value
     const waterLevelPercentage = (distance / maxDepth) * 100; // Calculate percentage of max depth
@@ -261,9 +256,9 @@ useEffect(() => {
     const lightness = 40 + (waterLevel / 100) * 45; // Ranges from 40% to 85%
     return `hsl(210, 100%, ${lightness}%)`; // HSL for blue, with lightness controlled
   };
-
   const waterColor = getWaterColor(waterLevel);
 
+  // Function to format timestamp into date and time strings for display 
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
     return {
@@ -272,6 +267,7 @@ useEffect(() => {
     };
   };
 
+  // Function to generate a XLSX report with sensor data
   const handleGenerateXLSXReport = () => {
     const startDateTime = new Date(`${startDate}T${startTime}`);
     const endDateTime = new Date(`${endDate}T${endTime}`);
@@ -281,7 +277,6 @@ useEffect(() => {
       const dataDateTime = new Date(data.timestamp);
       return dataDateTime >= startDateTime && dataDateTime <= endDateTime;
     });
-  
     const filteredSensor2Data = sensor2DataList.filter(data => {
       const dataDateTime = new Date(data.timestamp);
       return dataDateTime >= startDateTime && dataDateTime <= endDateTime;
@@ -293,12 +288,12 @@ useEffect(() => {
       ...filteredSensor1Data.map((data, index) => [
         data.timestamp,
         macAddress1, // Sensor 1 MAC Address
-        data.distance,
+        (depth1 - data.distance).toFixed(2),
         data.voltage || 'N/A',
         calculateVelocity(data.distance, depth1),
         calculateFlowRate(calculateVelocity(data.distance, depth1), data.distance, depth1),
         macAddress2, // Sensor 2 MAC Address
-        filteredSensor2Data[index]?.distance || 'N/A',
+        filteredSensor2Data[index]? (depth2 - sensor2DataList[index].distance).toFixed(2) : 'N/A',
         filteredSensor2Data[index]?.voltage || 'N/A',
         filteredSensor2Data[index] ? calculateVelocity(filteredSensor2Data[index].distance, depth2) : 'N/A',
         filteredSensor2Data[index] ? calculateFlowRate(calculateVelocity(filteredSensor2Data[index].distance, depth2), filteredSensor2Data[index].distance, depth2) : 'N/A',
@@ -313,33 +308,25 @@ useEffect(() => {
   };
   
 
-
-
+// ------ JSX code for the Smart Drain System component ------ 
   return (
-    // JSX code 
 <Container fluid className="smart-drain-system">
   <Row className="d-flex justify-content-center align-items-center">
     <Col md={10} className="text-center">
       <h1 className="headline">SMART DRAIN WATER SYSTEM</h1>
     </Col>
+    {/* Hamburger Icon */}
     <Col md={2} className="d-flex justify-content-end">
-      {/* Hamburger Icon */}
       <FaBars className="hamburger-icon" onClick={toggleMenu} />
     </Col>
   </Row>
 
-  {/* Menu Sidebar */}
+  {/* Menu Sidebar  - Buttons */}
   <div className={`menu-sidebar ${isMenuOpen ? 'open' : ''}`}>
     <Button onClick={handleLogout} className="menu-button">Logout</Button>
-
     <Button onClick={handleGenerateReport} className="close-sidebar">Generate Report</Button>
-    {reportGenerated && <p className="report-status">Report has been successfully generated!</p>}
-
-    <Button onClick={handleGenerateXLSXReport} className="close-sidebar">
-    Generate Excel (.xlsx)
-    </Button>
-
-    <Button className="close-sidebar" onClick={toggleMenu}>Close Sidebar</Button> {/* Close button */}
+    <Button onClick={handleGenerateXLSXReport} className="close-sidebar">Generate Excel (.xlsx)</Button>
+    <Button onClick={toggleMenu} className="close-sidebar">Close Sidebar</Button> {/* Close button */}
   </div>
 
     {/* Overlay to close the sidebar when clicking outside */}
@@ -349,38 +336,17 @@ useEffect(() => {
         <Row>
           <Col md={{ span: 5, offset: 1 }} className="d-flex justify-content-center">
             <Card.Body className="tank-container">
-              {/* Add Logout Button here */}
               <div className="water-tank-container">
-
-
-
                 <div className="water-tank">
                   {/* Water level visualization */}
                   <Wavify
                     fill={waterColor}
                     paused={false}
-                    options={{
-                      height: 2.5,
-                      amplitude: 12.5,
-                      speed: 0.20,
-                      points: 3,
-                    }}
-                    style={{ 
-                      height: `${calculateWaterLevelHeight((sensor1Data?.distance) + 50)}%`,
-                      position: 'absolute',
-                      bottom: 0,
-                      width: '100.2%',
-                      zIndex: 1,
-                    }}
+                    options={{ height: 2.5, amplitude: 12.5, speed: 0.20, points: 3, }}
+                    style={{ height: `${calculateWaterLevelHeight((sensor1Data?.distance) + 50)}%`, position: 'absolute', bottom: 0, width: '100.2%', zIndex: 1, }}
                   />
                   <div
-                    style={{
-                      position: 'absolute',
-                      bottom: `${waterLevel / 7.5}%`,
-                      left: '7.5px',
-                      fontSize: '20px',
-                      zIndex: 1,
-                    }}
+                    style={{ position: 'absolute', bottom: `${waterLevel / 7.5}%`, left: '7.5px', fontSize: '20px', zIndex: 1, }}
                   >
                     d
                   </div>
@@ -568,7 +534,7 @@ useEffect(() => {
 
                 {/* Floating divs for visual effect */}
                 <div className="floating-div-top">
-                  <div className="extra-border-top"></div> {/* Extra border at the top with vertical lines */}
+                  <div className="extra-border-top"></div>
                 </div>
 
                 <div className="floating-div-middle">
@@ -582,78 +548,50 @@ useEffect(() => {
                 <div className="floating-div">
                   <div className="extra-border"></div>
                 </div>
+
               </div>
             </Card.Body>
           </Col>
 
-          {/* Sensor 01 */}
-          <Col md={6}>
+  {/* Sensor 01 and 02 */}
+<Col md={6}>
   {/* Sensor 01 */}
   <Card className="sensor-card mb-4">
     <Card.Body>
+
       <div className="sensor-header">
         <h5 className="sensor-title">SENSOR 01</h5>
       </div>
 
       <div className="sensor-info">
         <div className="sensor-labels">
-          <p>
-            <strong>SPEED:</strong>{' '}
-            {sensor1Data ? (
-              calculateVelocity(sensor1Data.distance, depth1) + ' m/s'
-            ) : (
-              <div className="skeleton text"></div>
-            )}
+          <p><strong>SPEED:</strong>{' '}
+            {sensor1Data ? (calculateVelocity(sensor1Data.distance, depth1) + ' m/s') : (<div className="skeleton text"></div>)}
           </p>
-          <p>
-            <strong>WATER DEPTH:</strong>{' '}
-            {sensor1Data ? (
-              (depth1 - sensor1Data.distance).toFixed(2) + ' m'
-            ) : (
-              <div className="skeleton text"></div>
-            )}
+          <p><strong>WATER DEPTH:</strong>{' '}
+            {sensor1Data ? ((depth1 - sensor1Data.distance).toFixed(2) + ' m') : (<div className="skeleton text"></div>)}
           </p>
           <p>
             <strong>FLOW RATE:</strong>{' '}
-            {sensor1Data ? (
-              calculateFlowRate(
-                calculateVelocity(sensor1Data.distance, depth1),
-                sensor1Data.distance,
-                depth1
-              ) + ' m³/s'
-            ) : (
-              <div className="skeleton text"></div>
-            )}
+            {sensor1Data ? (calculateFlowRate(calculateVelocity(sensor1Data.distance, depth1), sensor1Data.distance, depth1) + ' m³/s') : (<div className="skeleton text"></div>)}
           </p>
         </div>
       </div>
 
       <p className="battery-label">
         <strong>BATTERY LEVEL:</strong>{' '}
-        {sensor1Data ? (
-          sensor1Data.voltage
-        ) : (
-          <div className="skeleton text"></div>
-        )}
+        {sensor1Data ? (sensor1Data.voltage) : (<div className="skeleton text"></div>)}
       </p>
 
       {/* Date and Time inside sensor-values div */}
       <div className="sensor-values">
         <p>
           <strong>DATE:</strong>{' '}
-          {sensor1Data ? (
-            formatTimestamp(sensor1Data.timestamp).date
-          ) : (
-            <div className="skeleton text"></div>
-          )}
+          {sensor1Data ? (formatTimestamp(sensor1Data.timestamp).date) : (<div className="skeleton text"></div>)}
         </p>
         <p>
           <strong>TIME:</strong>{' '}
-          {sensor1Data ? (
-            formatTimestamp(sensor1Data.timestamp).time
-          ) : (
-            <div className="skeleton text"></div>
-          )}
+          {sensor1Data ? (formatTimestamp(sensor1Data.timestamp).time) : (<div className="skeleton text"></div>)}
         </p>
       </div>
     </Card.Body>
@@ -732,42 +670,37 @@ useEffect(() => {
 </Col>
 </Row>
 
-
-      {/* Time Interval Selection */}
-
 {/* Time Interval Selection and Graph Container */}
 <div className="time-interval-graph-container">
-<Row className="time-interval-selection justify-content-center">
-  {/* Start Date and Time */}
-  <Col md={3}>
-    <Form.Group>
-      <Form.Label>Start Date</Form.Label>
-      <Form.Control type="date" value={startDate} onChange={handleStartDateChange} />
-    </Form.Group>
-  </Col>
-  <Col md={3}>
-    <Form.Group>
-      <Form.Label>Start Time</Form.Label>
-      <Form.Control type="time" value={startTime} onChange={handleStartTimeChange} />
-    </Form.Group>
-  </Col>
+  <Row className="time-interval-selection justify-content-center">
+    {/* Start Date and Time */}
+    <Col md={3}>
+      <Form.Group>
+        <Form.Label>Start Date</Form.Label>
+        <Form.Control type="date" value={startDate} onChange={handleStartDateChange} />
+      </Form.Group>
+    </Col>
+    <Col md={3}>
+      <Form.Group>
+        <Form.Label>Start Time</Form.Label>
+        <Form.Control type="time" value={startTime} onChange={handleStartTimeChange} />
+      </Form.Group>
+    </Col>
 
-  {/* End Date and Time */}
-  <Col md={3}>
-    <Form.Group>
-      <Form.Label>End Date</Form.Label>
-      <Form.Control type="date" value={endDate} onChange={handleEndDateChange} />
-    </Form.Group>
-  </Col>
-  <Col md={3}>
-    <Form.Group>
-      <Form.Label>End Time</Form.Label>
-      <Form.Control type="time" value={endTime} onChange={handleEndTimeChange} />
-    </Form.Group>
-  </Col>
-</Row>
-
-
+    {/* End Date and Time */}
+    <Col md={3}>
+      <Form.Group>
+        <Form.Label>End Date</Form.Label>
+        <Form.Control type="date" value={endDate} onChange={handleEndDateChange} />
+      </Form.Group>
+    </Col>
+    <Col md={3}>
+      <Form.Group>
+        <Form.Label>End Time</Form.Label>
+        <Form.Control type="time" value={endTime} onChange={handleEndTimeChange} />
+      </Form.Group>
+    </Col>
+  </Row>
 
   {/* Graph Container */}
   <div className="graph-wrapper" ref={graphRef}>
@@ -781,15 +714,12 @@ useEffect(() => {
     />
   </div>
 </div>
-
       </Card>
-      <footer className="footer">
-        <p>&copy; 2024 SmartDrain System. All rights reserved.</p>
-        <a href="#">Contact Us</a> | <a href="#">Privacy Policy</a>
-      </footer>
-
-    </Container>
-    
+        <footer className="footer">
+          <p>&copy; 2024 SmartDrain System. All rights reserved.</p>
+          <a href="#">Contact Us</a> | <a href="#">Privacy Policy</a>
+        </footer>
+    </Container>    
   );
 };
 
