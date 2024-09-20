@@ -272,6 +272,47 @@ useEffect(() => {
     };
   };
 
+  const handleGenerateXLSXReport = () => {
+    const startDateTime = new Date(`${startDate}T${startTime}`);
+    const endDateTime = new Date(`${endDate}T${endTime}`);
+  
+    // Filter Sensor 1 and Sensor 2 data based on the given time interval
+    const filteredSensor1Data = sensor1DataList.filter(data => {
+      const dataDateTime = new Date(data.timestamp);
+      return dataDateTime >= startDateTime && dataDateTime <= endDateTime;
+    });
+  
+    const filteredSensor2Data = sensor2DataList.filter(data => {
+      const dataDateTime = new Date(data.timestamp);
+      return dataDateTime >= startDateTime && dataDateTime <= endDateTime;
+    });
+  
+    // Prepare the Excel data
+    const wsData = [
+      ['Timestamp', 'Sensor 1 MAC', 'Sensor 1 Distance', 'Sensor 1 Voltage', 'Sensor 1 Speed', 'Sensor 1 Flow', 'Sensor 2 MAC', 'Sensor 2 Distance', 'Sensor 2 Voltage', 'Sensor 2 Speed', 'Sensor 2 Flow'],
+      ...filteredSensor1Data.map((data, index) => [
+        data.timestamp,
+        macAddress1, // Sensor 1 MAC Address
+        data.distance,
+        data.voltage || 'N/A',
+        calculateVelocity(data.distance, depth1),
+        calculateFlowRate(calculateVelocity(data.distance, depth1), data.distance, depth1),
+        macAddress2, // Sensor 2 MAC Address
+        filteredSensor2Data[index]?.distance || 'N/A',
+        filteredSensor2Data[index]?.voltage || 'N/A',
+        filteredSensor2Data[index] ? calculateVelocity(filteredSensor2Data[index].distance, depth2) : 'N/A',
+        filteredSensor2Data[index] ? calculateFlowRate(calculateVelocity(filteredSensor2Data[index].distance, depth2), filteredSensor2Data[index].distance, depth2) : 'N/A',
+      ]),
+    ];
+  
+    // Create a new workbook and sheet, and write the file as .xlsx
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    XLSX.utils.book_append_sheet(wb, ws, 'SensorData');
+    XLSX.writeFile(wb, 'sensor-data.xlsx'); // Save the file as .xlsx
+  };
+  
+
 
 
   return (
@@ -293,6 +334,10 @@ useEffect(() => {
 
     <Button onClick={handleGenerateReport} className="close-sidebar">Generate Report</Button>
     {reportGenerated && <p className="report-status">Report has been successfully generated!</p>}
+
+    <Button onClick={handleGenerateXLSXReport} className="close-sidebar">
+    Generate Excel (.xlsx)
+    </Button>
 
     <Button className="close-sidebar" onClick={toggleMenu}>Close Sidebar</Button> {/* Close button */}
   </div>
