@@ -150,38 +150,51 @@ useEffect(() => {
           return dataDateTime >= startDateTime && dataDateTime <= endDateTime;
         });
     
-        // Prepare table data for the PDF, including MAC Addresses, Voltage, Speed (Velocity), and Flow Rate
         const tableStartY = imgHeight + 20;
-        const tableData = filteredSensor1Data.map((data, index) => [
-          new Date(data.timestamp).toLocaleString(),
-          macAddress1, // MAC Address for Sensor 1
-          (depth1 - data.distance).toFixed(2),
-          data.voltage || 'N/A', // Voltage for Sensor 1
-          calculateVelocity(data.distance, depth1), // Speed for Sensor 1
-          calculateFlowRate(calculateVelocity(data.distance, depth1), data.distance, depth1), // Flow Rate for Sensor 1
-          macAddress2, // MAC Address for Sensor 2
-          filteredSensor2Data[index] ? (depth2 - filteredSensor2Data[index].distance).toFixed(2) : 'N/A', // Water Depth for Sensor 2
-          filteredSensor2Data[index]?.voltage || 'N/A', // Voltage for Sensor 2
-          filteredSensor2Data[index] ? calculateVelocity(filteredSensor2Data[index].distance, depth2) : 'N/A', // Speed for Sensor 2
-          filteredSensor2Data[index] ? calculateFlowRate(calculateVelocity(filteredSensor2Data[index].distance, depth2), filteredSensor2Data[index].distance, depth2) : 'N/A', // Flow Rate for Sensor 2
-        ]);
     
-        // Add the table to the PDF, including MAC Address, Voltage, Speed, and Flow Rate
+        const tableData = [];
+    
+        // Alternate rows between Sensor 1 and Sensor 2
+        filteredSensor1Data.forEach((sensor1, index) => {
+          const sensor2 = filteredSensor2Data[index];  // Get corresponding sensor2 data
+    
+          // Row for Sensor 1
+          tableData.push([
+            new Date(sensor1.timestamp).toLocaleString(),
+            macAddress1,  // MAC Address for Sensor 1
+            (depth1 - sensor1.distance).toFixed(2),  // Water depth for Sensor 1
+            sensor1.voltage || 'N/A',  // Voltage for Sensor 1
+            calculateVelocity(sensor1.distance, depth1),  // Speed for Sensor 1
+            calculateFlowRate(calculateVelocity(sensor1.distance, depth1), sensor1.distance, depth1)  // Flow Rate for Sensor 1
+          ]);
+    
+          // Row for Sensor 2 (if exists)
+          if (sensor2) {
+            tableData.push([
+              new Date(sensor2.timestamp).toLocaleString(),
+              macAddress2,  // MAC Address for Sensor 2
+              (depth2 - sensor2.distance).toFixed(2),  // Water depth for Sensor 2
+              sensor2.voltage || 'N/A',  // Voltage for Sensor 2
+              calculateVelocity(sensor2.distance, depth2),  // Speed for Sensor 2
+              calculateFlowRate(calculateVelocity(sensor2.distance, depth2), sensor2.distance, depth2)  // Flow Rate for Sensor 2
+            ]);
+          }
+        });
+    
+        // Add the table to the PDF
         autoTable(pdf, {
           startY: tableStartY,
-          head: [['Timestamp', 'Sensor 1 MAC Address', 'Depth (m)', 'Voltage', 'Speed (m/s)', 'Flow Rate (m³/s)', 'Sensor 2 MAC Address', 'Depth (m)', 'Voltage', 'Speed (m/s)', 'Flow Rate (m³/s)']],
+          head: [['Timestamp', 'MAC Address', 'Water Depth (m)', 'Voltage', 'Speed (m/s)', 'Flow Rate (m³/s)']],
           body: tableData,
         });
     
-        // Save filtered data to Excel as well
-        generateExcel(filteredSensor1Data, filteredSensor2Data, startDate, startTime, endDate, endTime);
         pdf.save('graph-report-with-table.pdf');
       } catch (error) {
         console.error('Error generating report:', error);
       }
     };
     
-    // Function to generate an Excel file with sensor data
+    
     const generateExcel = (sensor1DataList, sensor2DataList, startDate, startTime, endDate, endTime) => {
       const startDateTime = new Date(`${startDate}T${startTime}`);
       const endDateTime = new Date(`${endDate}T${endTime}`);
@@ -196,30 +209,44 @@ useEffect(() => {
         return dataDateTime >= startDateTime && dataDateTime <= endDateTime;
       });
     
-      // Include MAC addresses, Voltage, Speed (Velocity), and Flow Rate in the Excel sheet
       const wsData = [
-        ['Timestamp', 'Sensor 1 MAC Address', 'Sensor 1 Water Depth (m)', 'Sensor 1 Voltage', 'Sensor 1 Speed (m/s)', 'Sensor 1 Flow Rate (m³/s)', 'Sensor 2 MAC Address', 'Sensor 2 Water Depth (m)', 'Sensor 2 Voltage', 'Sensor 2 Speed (m/s)', 'Sensor 2 Flow Rate (m³/s)'],
-        ...filteredSensor1Data.map((data, index) => [
-          data.timestamp,
-          macAddress1, // MAC Address for Sensor 1
-          data.distance,
-          data.voltage || 'N/A', // Voltage for Sensor 1
-          calculateVelocity(data.distance, depth1), // Speed for Sensor 1
-          calculateFlowRate(calculateVelocity(data.distance, depth1), data.distance, depth1), // Flow Rate for Sensor 1
-          macAddress2, // MAC Address for Sensor 2
-          filteredSensor2Data[index]?.distance || 'N/A',
-          filteredSensor2Data[index]?.voltage || 'N/A', // Voltage for Sensor 2
-          filteredSensor2Data[index] ? calculateVelocity(filteredSensor2Data[index].distance, depth2) : 'N/A', // Speed for Sensor 2
-          filteredSensor2Data[index] ? calculateFlowRate(calculateVelocity(filteredSensor2Data[index].distance, depth2), filteredSensor2Data[index].distance, depth2) : 'N/A', // Flow Rate for Sensor 2
-        ]),
+        ['Timestamp', 'MAC Address', 'Water Depth (m)', 'Voltage', 'Speed (m/s)', 'Flow Rate (m³/s)'],
       ];
     
-      // Generate Excel file with the sensor data
+      // Alternate rows between Sensor 1 and Sensor 2
+      filteredSensor1Data.forEach((sensor1, index) => {
+        const sensor2 = filteredSensor2Data[index];  // Get corresponding sensor2 data
+    
+        // Row for Sensor 1
+        wsData.push([
+          sensor1.timestamp,
+          macAddress1,  // MAC Address for Sensor 1
+          (depth1 - sensor1.distance).toFixed(2),  // Water depth for Sensor 1
+          sensor1.voltage || 'N/A',  // Voltage for Sensor 1
+          calculateVelocity(sensor1.distance, depth1),  // Speed for Sensor 1
+          calculateFlowRate(calculateVelocity(sensor1.distance, depth1), sensor1.distance, depth1)  // Flow Rate for Sensor 1
+        ]);
+    
+        // Row for Sensor 2 (if exists)
+        if (sensor2) {
+          wsData.push([
+            sensor2.timestamp,
+            macAddress2,  // MAC Address for Sensor 2
+            (depth2 - sensor2.distance).toFixed(2),  // Water depth for Sensor 2
+            sensor2.voltage || 'N/A',  // Voltage for Sensor 2
+            calculateVelocity(sensor2.distance, depth2),  // Speed for Sensor 2
+            calculateFlowRate(calculateVelocity(sensor2.distance, depth2), sensor2.distance, depth2)  // Flow Rate for Sensor 2
+          ]);
+        }
+      });
+    
+      // Generate Excel file
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.aoa_to_sheet(wsData);
       XLSX.utils.book_append_sheet(wb, ws, 'SensorData');
       XLSX.writeFile(wb, 'sensor-data.xlsx');
     };
+    
     
   // Function to calculate velocity
   const calculateVelocity = (distance, depth) => {
@@ -274,37 +301,51 @@ useEffect(() => {
       const dataDateTime = new Date(data.timestamp);
       return dataDateTime >= startDateTime && dataDateTime <= endDateTime;
     });
+    
     const filteredSensor2Data = sensor2DataList.filter(data => {
       const dataDateTime = new Date(data.timestamp);
       return dataDateTime >= startDateTime && dataDateTime <= endDateTime;
     });
   
-    // Prepare the Excel data
+    // Prepare the Excel data with alternating rows for Sensor 1 and Sensor 2
     const wsData = [
-      ['Timestamp', 'Sensor 1 MAC', 'Sensor 1 Water Depth', 'Sensor 1 Voltage', 'Sensor 1 Speed', 'Sensor 1 Flow', 'Sensor 2 MAC', 'Sensor 2 Water Depth', 'Sensor 2 Voltage', 'Sensor 2 Speed', 'Sensor 2 Flow'],
-      ...filteredSensor1Data.map((data, index) => [
-        data.timestamp,
-        macAddress1, // Sensor 1 MAC Address
-        (depth1 - data.distance).toFixed(2),
-        data.voltage || 'N/A',
-        calculateVelocity(data.distance, depth1),
-        calculateFlowRate(calculateVelocity(data.distance, depth1), data.distance, depth1),
-        macAddress2, // Sensor 2 MAC Address
-        filteredSensor2Data[index]? (depth2 - sensor2DataList[index].distance).toFixed(2) : 'N/A',
-        filteredSensor2Data[index]?.voltage || 'N/A',
-        filteredSensor2Data[index] ? calculateVelocity(filteredSensor2Data[index].distance, depth2) : 'N/A',
-        filteredSensor2Data[index] ? calculateFlowRate(calculateVelocity(filteredSensor2Data[index].distance, depth2), filteredSensor2Data[index].distance, depth2) : 'N/A',
-      ]),
+      ['Timestamp', 'MAC Address', 'Water Depth (m)', 'Voltage', 'Speed (m/s)', 'Flow Rate (m³/s)'],  // Header row
     ];
+  
+    filteredSensor1Data.forEach((sensor1, index) => {
+      const sensor2 = filteredSensor2Data[index];  // Get corresponding sensor2 data, if available
+  
+      // Row for Sensor 1
+      wsData.push([
+        sensor1.timestamp,
+        macAddress1,  // Sensor 1 MAC Address
+        (depth1 - sensor1.distance).toFixed(2),  // Water depth for Sensor 1
+        sensor1.voltage || 'N/A',  // Voltage for Sensor 1
+        calculateVelocity(sensor1.distance, depth1),  // Speed for Sensor 1
+        calculateFlowRate(calculateVelocity(sensor1.distance, depth1), sensor1.distance, depth1)  // Flow Rate for Sensor 1
+      ]);
+  
+      // Row for Sensor 2 (if exists)
+      if (sensor2) {
+        wsData.push([
+          sensor2.timestamp,
+          macAddress2,  // Sensor 2 MAC Address
+          (depth2 - sensor2.distance).toFixed(2),  // Water depth for Sensor 2
+          sensor2.voltage || 'N/A',  // Voltage for Sensor 2
+          calculateVelocity(sensor2.distance, depth2),  // Speed for Sensor 2
+          calculateFlowRate(calculateVelocity(sensor2.distance, depth2), sensor2.distance, depth2)  // Flow Rate for Sensor 2
+        ]);
+      }
+    });
   
     // Create a new workbook and sheet, and write the file as .xlsx
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(wsData);
     XLSX.utils.book_append_sheet(wb, ws, 'SensorData');
-    XLSX.writeFile(wb, 'sensor-data.xlsx'); // Save the file as .xlsx
+    XLSX.writeFile(wb, 'sensor-data.xlsx');  // Save the file as .xlsx
   };
   
-
+  
 // ------ JSX code for the Smart Drain System component ------ 
   return (
 <Container fluid className="smart-drain-system">
