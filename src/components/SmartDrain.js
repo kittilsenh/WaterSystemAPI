@@ -169,7 +169,7 @@ useEffect(() => {
         // Add the table to the PDF, including MAC Address, Voltage, Speed, and Flow Rate
         autoTable(pdf, {
           startY: tableStartY,
-          head: [['Timestamp', 'Sensor 1 MAC Address', 'Distance (m)', 'Voltage', 'Speed (m/s)', 'Flow Rate (m³/s)', 'Sensor 2 MAC Address', 'Distance (m)', 'Voltage', 'Speed (m/s)', 'Flow Rate (m³/s)']],
+          head: [['Timestamp', 'Sensor 1 MAC Address', 'Depth (m)', 'Voltage', 'Speed (m/s)', 'Flow Rate (m³/s)', 'Sensor 2 MAC Address', 'Depth (m)', 'Voltage', 'Speed (m/s)', 'Flow Rate (m³/s)']],
           body: tableData,
         });
     

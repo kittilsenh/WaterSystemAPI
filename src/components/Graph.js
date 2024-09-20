@@ -55,7 +55,7 @@ const Graph = ({ sensor1DataList, sensor2DataList, startDate, startTime, endDate
       setFilteredSensor1Data(filteredSensor1);
       setFilteredSensor2Data(filteredSensor2);
       setLoading(false); // Stop loading after data is set
-    }, 1000);  // Simulate a 1-second delay for loading
+    }, );  // Simulate a 1-second delay for loading
   }, [sensor1DataList, sensor2DataList, startDate, startTime, endDate, endTime]);
 
   // Chart options
@@ -76,7 +76,7 @@ const Graph = ({ sensor1DataList, sensor2DataList, startDate, startTime, endDate
         beginAtZero: true,
         title: {
           display: true,
-          text: 'Distance (m)',
+          text: 'Depth (m)',
         },
       },
     },
@@ -91,7 +91,7 @@ const Graph = ({ sensor1DataList, sensor2DataList, startDate, startTime, endDate
   const chartData = {
     datasets: [
       {
-        label: 'Sensor 01 Distance (m)',
+        label: 'Sensor 01 Depth (m)',
         data: filteredSensor1Data,
         borderColor: 'rgba(75,192,192,1)',  // Blue for Sensor 01
         backgroundColor: 'rgba(75,192,192,0.2)',
@@ -101,7 +101,7 @@ const Graph = ({ sensor1DataList, sensor2DataList, startDate, startTime, endDate
         showLine: false, // Enable the line between points
       },
       {
-        label: 'Sensor 02 Distance (m)',
+        label: 'Sensor 02 Depth (m)',
         data: filteredSensor2Data,
         borderColor: 'rgba(255,99,132,1)',  // Red for Sensor 02
         backgroundColor: 'rgba(255,99,132,0.2)',
