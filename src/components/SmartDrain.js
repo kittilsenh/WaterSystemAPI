@@ -737,24 +737,37 @@ useEffect(() => {
 
 {/* Time Interval Selection and Graph Container */}
 <div className="time-interval-graph-container">
-  <Row className="time-interval-selection">
-    <Col md={3}>
-      <Form.Group>
-        <Form.Label>Start Date</Form.Label>
-        <Form.Control type="date" value={startDate} onChange={handleStartDateChange} />
-        <Form.Label>Start Time</Form.Label>
-        <Form.Control type="time" value={startTime} onChange={handleStartTimeChange} />
-      </Form.Group>
-    </Col>
-    <Col md={3}>
-      <Form.Group>
-        <Form.Label>End Date</Form.Label>
-        <Form.Control type="date" value={endDate} onChange={handleEndDateChange} />
-        <Form.Label>End Time</Form.Label>
-        <Form.Control type="time" value={endTime} onChange={handleEndTimeChange} />
-      </Form.Group>
-    </Col>
-  </Row>
+<Row className="time-interval-selection justify-content-center">
+  {/* Start Date and Time */}
+  <Col md={3}>
+    <Form.Group>
+      <Form.Label>Start Date</Form.Label>
+      <Form.Control type="date" value={startDate} onChange={handleStartDateChange} />
+    </Form.Group>
+  </Col>
+  <Col md={3}>
+    <Form.Group>
+      <Form.Label>Start Time</Form.Label>
+      <Form.Control type="time" value={startTime} onChange={handleStartTimeChange} />
+    </Form.Group>
+  </Col>
+
+  {/* End Date and Time */}
+  <Col md={3}>
+    <Form.Group>
+      <Form.Label>End Date</Form.Label>
+      <Form.Control type="date" value={endDate} onChange={handleEndDateChange} />
+    </Form.Group>
+  </Col>
+  <Col md={3}>
+    <Form.Group>
+      <Form.Label>End Time</Form.Label>
+      <Form.Control type="time" value={endTime} onChange={handleEndTimeChange} />
+    </Form.Group>
+  </Col>
+</Row>
+
+
 
   {/* Graph Container */}
   <div className="graph-wrapper" ref={graphRef}>
